@@ -50,24 +50,37 @@ def get_model(key):
     return _models[key]
 
 
-def draw_boxes(img_bgr, boxes, labels, thickness=3):
+def draw_boxes(img_bgr, boxes, labels, thickness=None):
     out = img_bgr.copy()
     h, w = out.shape[:2]
-    fs = max(0.6, w / 2000)
+    fs = min(1.4, max(0.4, w / 1400))            # label size follows image size
+    thickness = thickness or (1 if w < 600 else 2 if w < 1500 else 3)
+    tt = 1 if w < 900 else 2
     for (x1, y1, x2, y2), lab in zip(boxes, labels):
         cls = lab.split(" ")[0]
         c = COLORS.get(cls, (255, 255, 255))
         cv2.rectangle(out, (int(x1), int(y1)), (int(x2), int(y2)), c, thickness)
-        (tw, th), _ = cv2.getTextSize(lab, cv2.FONT_HERSHEY_SIMPLEX, fs, 2)
-        y0 = int(y1) - 6 if y1 > th + 8 else int(y2) + th + 6
-        cv2.rectangle(out, (int(x1), y0 - th - 4), (int(x1) + tw + 6, y0 + 4), c, -1)
-        cv2.putText(out, lab, (int(x1) + 3, y0), cv2.FONT_HERSHEY_SIMPLEX, fs, (255, 255, 255), 2, cv2.LINE_AA)
+        (tw, th), _ = cv2.getTextSize(lab, cv2.FONT_HERSHEY_SIMPLEX, fs, tt)
+        y0 = int(y1) - 4 if y1 > th + 8 else int(y2) + th + 4
+        cv2.rectangle(out, (int(x1), y0 - th - 3), (int(x1) + tw + 4, y0 + 3), c, -1)
+        cv2.putText(out, lab, (int(x1) + 2, y0), cv2.FONT_HERSHEY_SIMPLEX, fs, (255, 255, 255), tt, cv2.LINE_AA)
     return out
 
+def pick_imgsz(img_bgr, choice):
+    """Training used 2800-px-wide strips at imgsz 1024 (scale 0.37). Upscaling a small photo to 1024 makes
+    defects 2-3x larger than anything seen in training and produces spurious boxes (390x280 photo: 11 boxes
+    at 1024 vs 4 sensible ones at 640), so small inputs run closer to native resolution."""
+    if choice != "Auto":
+        return int(choice)
+    side = max(img_bgr.shape[:2])
+    if side >= 1600:
+        return IMGSZ
+    return int(min(IMGSZ, max(416, round(side * 1.6 / 32) * 32)))
 
-def run_one(model, img_bgr, conf, iou):
+
+def run_one(model, img_bgr, conf, iou, imgsz=IMGSZ):
     t = time.time()
-    r = model.predict(img_bgr, imgsz=IMGSZ, conf=conf, iou=iou, verbose=False, device="cpu")[0]
+    r = model.predict(img_bgr, imgsz=imgsz, conf=conf, iou=iou, verbose=False, device="cpu")[0]
     dt = time.time() - t
     boxes = r.boxes.xyxy.cpu().numpy() if len(r.boxes) else np.zeros((0, 4))
     cls = r.boxes.cls.cpu().numpy().astype(int) if len(r.boxes) else np.zeros(0, int)
@@ -89,18 +102,24 @@ def summarize(rows):
     return f"**{len(rows)} defect(s):** " + ", ".join(parts)
 
 
-def detect(image, model_key, conf, iou, compare):
+def detect(image, model_key, conf, iou, compare, size_choice="Auto"):
     if image is None:
         raise gr.Error("Upload a board image first.")
     img_bgr = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+    imgsz = pick_imgsz(img_bgr, size_choice)
     keys = list(WEIGHTS) if compare else [model_key]
     gallery, tables, notes = [], [], []
     for k in keys:
         m = get_model(k)
-        vis, rows, dt, sp = run_one(m, img_bgr, conf, iou)
+        vis, rows, dt, sp = run_one(m, img_bgr, conf, iou, imgsz)
         gallery.append((cv2.cvtColor(vis, cv2.COLOR_BGR2RGB), k))
         tables.extend([[k.split(" ")[0]] + r for r in rows])
-        notes.append(f"{k}: {summarize(rows)}  \n_{dt*1000:.0f} ms on CPU (inference {sp['inference']:.0f} ms), input {image.shape[1]}x{image.shape[0]} at imgsz {IMGSZ}_")
+        notes.append(f"{k}: {summarize(rows)}  \n_{dt*1000:.0f} ms on CPU (inference {sp['inference']:.0f} ms), "
+                     f"input {image.shape[1]}x{image.shape[0]}, run at imgsz {imgsz}_")
+    if image.shape[1] < 1000:
+        notes.append("_Note: the models were trained on 2800x1024 line-scan strips under even lighting. Small photos, "
+                     "screenshots or stock images are far outside that domain; treat these boxes as indicative only. "
+                     "Watermarks and printed text tend to be reported as Resin._")
     return gallery, tables, "\n\n".join(notes)
 
 
@@ -198,12 +217,14 @@ with gr.Blocks(title="Wood Defect Detection - YOLO11") as demo:
                 compare = gr.Checkbox(False, label="Run both models side by side")
                 conf = gr.Slider(0.05, 0.9, value=0.35, step=0.05, label="Confidence threshold")
                 iou = gr.Slider(0.3, 0.9, value=0.6, step=0.05, label="NMS IoU")
+                size_dd = gr.Dropdown(["Auto", "1024", "640", "416"], value="Auto",
+                                      label="Input size (Auto = 1024 for full strips, near-native for small photos)")
                 btn = gr.Button("Detect", variant="primary")
             with gr.Column(scale=2):
                 out_gal = gr.Gallery(label="Detections", columns=1, height=520, object_fit="contain")
                 out_md = gr.Markdown()
                 out_tbl = gr.Dataframe(headers=["model", "class", "conf", "x1", "y1", "x2", "y2", "w", "h"], label="Detections", wrap=True)
-        btn.click(detect, [inp, model_dd, conf, iou, compare], [out_gal, out_tbl, out_md])
+        btn.click(detect, [inp, model_dd, conf, iou, compare, size_dd], [out_gal, out_tbl, out_md])
     with gr.Tab("Test boards: ground truth vs prediction"):
         gr.Markdown("Images from the 12 held-out test boards. Left: annotator's boxes. Right: model output. "
                     "Colours are per class and identical on both sides.")
@@ -229,5 +250,15 @@ with gr.Blocks(title="Wood Defect Detection - YOLO11") as demo:
             f"- <span style='display:inline-block;width:14px;height:14px;background:rgb({c[2]},{c[1]},{c[0]});border:1px solid #333;margin-right:6px'></span>**{n}**: {DESCR[n]}"
             for n, c in COLORS.items()))
 
+def _preload():
+    for k, p in WEIGHTS.items():
+        if p.exists():
+            try:
+                get_model(k)
+            except Exception as e:  # noqa: BLE001
+                print("preload failed for", k, e)
+
+
 if __name__ == "__main__":
+    _preload()
     demo.launch(server_name=os.environ.get("GRADIO_HOST", "127.0.0.1"), server_port=int(os.environ.get("PORT", 7860)), show_error=True)
