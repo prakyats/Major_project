@@ -5,7 +5,7 @@ This page is the single place to see what has been done, what every experiment p
 what comes next. It is written for someone who has not followed the work day to day.
 Detailed reasoning for every decision is in [NOTES.md](../NOTES.md).
 
-Last updated: 7 September 2026, 18:00 IST.
+Last updated: 7 September 2026, 20:00 IST. **Phase complete: final test table in section 6b.**
 
 ## 1. What the project does
 
@@ -28,7 +28,7 @@ F1000Research 10:581, doi:10.12688/f1000research.52903.2. Images are 2800 x 1024
 | 7 Sep, morning | Data audit reproduced and corrected. Real class names found. Board-level split built (seed 42). Dataset and scripts uploaded to Kaggle. |
 | 7 Sep, 11:35-14:14 | **Run 1**: YOLO11m, 1024 rect, single T4, 89 epochs. Val mAP50 62.6 on clean boards. |
 | 7 Sep, 15:00-17:43 | **Run 2**: batch 32, lr0 0.001, patience 40. Val mAP50 65.7, stable curve. Adopted as final YOLO11m config. |
-| 7 Sep, evening | **Final session**: YOLO11s baseline with identical config, then one test evaluation per model. |
+| 7 Sep, 17:48-19:40 | **Final session**: YOLO11s baseline (identical config), then one test evaluation per model. Test mAP50: YOLO11s 64.6, YOLO11m 63.0 (tie). |
 
 ## 3. Data findings that change how earlier results must be read
 
@@ -161,10 +161,59 @@ Marrow (+3.2). Quartzity remains unlearned at 5.4 mAP50: too few examples of a f
 grain-aligned streak. This configuration (batch 32, lr0 0.001, patience 40) is adopted as the
 final YOLO11m setup.
 
-### Final session (notebook v9): YOLO11s baseline with the identical configuration, then test
+### Final session (notebook v9): YOLO11s baseline, then one test evaluation per model
 
-Planned: train YOLO11s with exactly the run 2 settings, then evaluate both models on the
-held-out test boards exactly once. Results will be added here.
+YOLO11s was trained with exactly the adopted YOLO11m settings (batch 32, lr0 0.001, patience 40,
+1024 rect, seed 42): 90 epochs in 1.43 h, best epoch 50, val mAP50 65.3 / mAP50-95 36.0.
+Artefacts: [runs_log/run3_yolo11s_1024rect_b32_lr001_v9](../runs_log/run3_yolo11s_1024rect_b32_lr001_v9/).
+
+Then both models were evaluated on the held-out test boards (12 boards, 469 images, 1,023 boxes)
+**exactly once**. Full outputs: [eval/yolo11m_final](../eval/yolo11m_final/) and
+[eval/yolo11s_baseline](../eval/yolo11s_baseline/).
+
+## 6b. Final results: baseline vs proposed on physically separate test boards
+
+| Model | Split used for training | Test P | Test R | Test F1 | Test mAP50 | Test mAP50-95 | Inference ms/img (T4, 1024 rect) | Params |
+|---|---|---:|---:|---:|---:|---:|---:|---:|
+| YOLO11s, 640 square (old run) | leaky, tile-level | 73.1 | -- | -- | 62.2 | -- | -- | 9.4 M |
+| **YOLO11s, 1024 rect (clean baseline)** | board-level, seed 42 | 71.0 | 64.1 | 67.4 | **64.6** | 33.4 | 11.7 | 9.4 M |
+| **YOLO11m, 1024 rect (proposed)** | board-level, seed 42 | 63.4 | 66.2 | 64.7 | **63.0** | **34.0** | 33.2 | 20.0 M |
+
+Per class:
+
+| Class | Test boxes | 11s P | 11s R | 11s F1 | 11s mAP50 | 11s mAP50-95 | 11m P | 11m R | 11m F1 | 11m mAP50 | 11m mAP50-95 |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Dead_Knot | 343 | 83.0 | 84.3 | 83.6 | 89.1 | 43.3 | 77.2 | 88.0 | 82.3 | 86.8 | 41.8 |
+| Marrow | 46 | 89.3 | 72.7 | 80.2 | 87.7 | 55.2 | 79.6 | 84.9 | 82.2 | 85.8 | 57.4 |
+| Live_Knot | 406 | 75.2 | 75.1 | 75.2 | 75.8 | 32.6 | 73.5 | 79.2 | 76.3 | 74.8 | 32.0 |
+| Knot_missing | 24 | 80.8 | 70.8 | 75.5 | 69.6 | 34.1 | 57.9 | 62.5 | 60.1 | 62.7 | 35.7 |
+| Knot_with_crack | 30 | 80.9 | 63.3 | 71.1 | 67.5 | 42.8 | 63.2 | 63.3 | 63.3 | 61.7 | 38.4 |
+| Resin | 69 | 81.9 | 53.6 | 64.8 | 60.4 | 29.5 | 68.0 | 56.5 | 61.7 | 59.5 | 29.9 |
+| Crack | 95 | 60.5 | 63.2 | 61.8 | 53.0 | 26.3 | 56.8 | 72.6 | 63.7 | 57.7 | 31.0 |
+| Quartzity | 10 | 16.7 | 30.0 | 21.5 | 13.4 | 3.0 | 30.7 | 22.3 | 25.8 | 15.4 | 5.7 |
+| **ALL** | 1023 | 71.0 | 64.1 | 67.4 | 64.6 | 33.4 | 63.4 | 66.2 | 64.7 | 63.0 | 34.0 |
+
+![Test confusion matrix, YOLO11m](../eval/yolo11m_final/confusion_matrix_normalized.png)
+
+Reading of the result (be this honest in the report):
+
+- **The two models are statistically tied on the test boards.** YOLO11s leads mAP50 by 1.6 points
+  and precision by 7.6; YOLO11m leads mAP50-95 by 0.6, recall by 2.1, and Crack mAP50 by 4.7.
+  The test set is 12 boards and 1,023 boxes; the four rarest classes have 10 to 46 boxes each,
+  so per-class differences of a few points are noise. Do not claim that YOLO11m is better.
+- **What is defensible to claim:** (1) the data pipeline fixes (board-level split, correct class
+  names, rectangular 1024 training, grain-safe augmentation) produce a clean-split test mAP50 of
+  63 to 65 for both model sizes, which is at least as good as the old leaky 62.2 measured on a
+  far easier split; (2) Crack, the class the resolution fix targeted, went from 42.2 (leaky) to
+  53.0 / 57.7 (clean); (3) at equal training cost YOLO11s is 2.8x faster at inference
+  (11.7 vs 33.2 ms/img on a T4, batch 16) with no loss in mAP50, so it is the better deployment
+  choice on this dataset; (4) capacity is not the bottleneck, which is what the pre-training
+  audit predicted. The bottleneck is data: Quartzity has 125 training boxes and is unlearned by
+  both models (13 to 15 mAP50), and knot subtypes are confused with each other.
+- Validation vs test: both models scored about 65 on val and 63 to 65 on test, so there is no
+  sign of overfitting to the validation boards.
+- Inference speed: evaluate.py runs batch 16 on the test split (33.2 / 11.7 ms). The training-time
+  validation pass reported 19.1 / 13.7 ms at its own batch size; quote one setting consistently.
 
 ## 7. Rules followed throughout
 
@@ -176,12 +225,14 @@ held-out test boards exactly once. Results will be added here.
 
 ## 8. Next steps
 
-1. Done: run 2 adopted as the final YOLO11m configuration.
-2. In progress: YOLO11s trained with the identical configuration (about 2 GPU hours), then
-   one test evaluation per model. Publish the baseline-vs-proposed per-class table here.
-3. Optional ablations if quota remains (about 22 h of the weekly 30 h): drop sub-5-pixel boxes,
-   imgsz 1280 rect for the thin classes. These would be reported separately, not as the main table.
-4. Rework the synopsis: sawn timber instead of plywood, real class names, YOLO11, citation.
+1. Done: final baseline-vs-proposed table (section 6b). The sprint deliverable exists.
+2. Write-up: report the tie honestly; the defensible claims are listed under the table. State
+   that the test split was evaluated exactly once per model.
+3. Optional, validation-only extras with the remaining quota (about 23 h): multi-seed YOLO11s
+   runs to quantify the noise floor; dropping the 99 sub-5-pixel boxes; a clearly separate
+   Quartzity experiment. None of these may alter the table above without a new, single test run.
+4. Rework the synopsis: sawn timber instead of plywood, real class names, YOLO11, citation,
+   and "YOLO11s vs YOLO11m at equal data and training budget" as the comparison.
 
 ## 9. Where things are
 

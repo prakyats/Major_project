@@ -102,7 +102,7 @@ Batches mix boards as intended.
 - [x] Run 1: 89 epochs (early stop), best epoch 64, val mAP50 62.6 / mAP50-95 33.7.
 - [x] Log confirms rect=True (shuffle disabled warning present), imgsz 1024, no rect=False warning on single GPU.
 - [x] OOM: v6 (2xT4, rect silently off, batch 32) OOM on GPU 1 at first step. Fixed by single-GPU rect batch 16 (v7).
-- [ ] Test evaluated exactly once on (date):
+- [x] Test evaluated exactly once per model on 2026-09-07 (notebook v9): YOLO11m run 2 best.pt and YOLO11s baseline best.pt.
 - [ ] best.pt (run 1) stored at: Kaggle notebook v7 output, persist/yolo11m_1024rect/best.pt (40.5 MB); local copy weights_local/ (gitignored).
 
 ## 7. Run 1: YOLO11m, 1024 rect, single T4 (Kaggle notebook v7, 2026-09-07)
@@ -202,3 +202,71 @@ the identical configuration, then one test evaluation per model in the same sess
    YOLO11m best.pt from run 2 (uploaded as Kaggle dataset `prakyats/wood-yolo11m-weights`),
    YOLO11s best.pt from step 1.
 3. Commit eval/ tables, both runs' artefacts, and the final table in docs/PROGRESS.md.
+
+## 12. FINAL: test evaluation, run once per model (notebook v9, 2026-09-07 evening)
+
+YOLO11s baseline: `--model yolo11s.pt`, otherwise identical to the adopted config (batch 32, lr0
+0.001, patience 40, 1024 rect, seed 42). 90 epochs in 1.43 h, early stop, best epoch 50, val mAP50
+65.3 / mAP50-95 36.0. Artefacts: `runs_log/run3_yolo11s_1024rect_b32_lr001_v9/`.
+
+Test split (12 boards, 469 images, 1,023 boxes) evaluated exactly once per model with evaluate.py
+(best.pt, imgsz 1024, rect, conf 0.001, iou 0.6). Tables: `eval/yolo11m_final/` and
+`eval/yolo11s_baseline/` (csv, md, PR/F1 curves, confusion matrices).
+
+| Model | Split used for training | Test P | Test R | Test F1 | Test mAP50 | Test mAP50-95 | Inference ms/img (T4, 1024 rect) | Params |
+|---|---|---:|---:|---:|---:|---:|---:|---:|
+| YOLO11s, 640 square (old run) | leaky, tile-level | 73.1 | -- | -- | 62.2 | -- | -- | 9.4 M |
+| **YOLO11s, 1024 rect (clean baseline)** | board-level, seed 42 | 71.0 | 64.1 | 67.4 | **64.6** | 33.4 | 11.7 | 9.4 M |
+| **YOLO11m, 1024 rect (proposed)** | board-level, seed 42 | 63.4 | 66.2 | 64.7 | **63.0** | **34.0** | 33.2 | 20.0 M |
+
+Per class:
+
+| Class | Test boxes | 11s P | 11s R | 11s F1 | 11s mAP50 | 11s mAP50-95 | 11m P | 11m R | 11m F1 | 11m mAP50 | 11m mAP50-95 |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Dead_Knot | 343 | 83.0 | 84.3 | 83.6 | 89.1 | 43.3 | 77.2 | 88.0 | 82.3 | 86.8 | 41.8 |
+| Marrow | 46 | 89.3 | 72.7 | 80.2 | 87.7 | 55.2 | 79.6 | 84.9 | 82.2 | 85.8 | 57.4 |
+| Live_Knot | 406 | 75.2 | 75.1 | 75.2 | 75.8 | 32.6 | 73.5 | 79.2 | 76.3 | 74.8 | 32.0 |
+| Knot_missing | 24 | 80.8 | 70.8 | 75.5 | 69.6 | 34.1 | 57.9 | 62.5 | 60.1 | 62.7 | 35.7 |
+| Knot_with_crack | 30 | 80.9 | 63.3 | 71.1 | 67.5 | 42.8 | 63.2 | 63.3 | 63.3 | 61.7 | 38.4 |
+| Resin | 69 | 81.9 | 53.6 | 64.8 | 60.4 | 29.5 | 68.0 | 56.5 | 61.7 | 59.5 | 29.9 |
+| Crack | 95 | 60.5 | 63.2 | 61.8 | 53.0 | 26.3 | 56.8 | 72.6 | 63.7 | 57.7 | 31.0 |
+| Quartzity | 10 | 16.7 | 30.0 | 21.5 | 13.4 | 3.0 | 30.7 | 22.3 | 25.8 | 15.4 | 5.7 |
+| **ALL** | 1023 | 71.0 | 64.1 | 67.4 | 64.6 | 33.4 | 63.4 | 66.2 | 64.7 | 63.0 | 34.0 |
+
+Reading of the result (be this honest in the report):
+
+- **The two models are statistically tied on the test boards.** YOLO11s leads mAP50 by 1.6 points
+  and precision by 7.6; YOLO11m leads mAP50-95 by 0.6, recall by 2.1, and Crack mAP50 by 4.7.
+  The test set is 12 boards and 1,023 boxes; the four rarest classes have 10 to 46 boxes each,
+  so per-class differences of a few points are noise. Do not claim that YOLO11m is better.
+- **What is defensible to claim:** (1) the data pipeline fixes (board-level split, correct class
+  names, rectangular 1024 training, grain-safe augmentation) produce a clean-split test mAP50 of
+  63 to 65 for both model sizes, which is at least as good as the old leaky 62.2 measured on a
+  far easier split; (2) Crack, the class the resolution fix targeted, went from 42.2 (leaky) to
+  53.0 / 57.7 (clean); (3) at equal training cost YOLO11s is 2.8x faster at inference
+  (11.7 vs 33.2 ms/img on a T4, batch 16) with no loss in mAP50, so it is the better deployment
+  choice on this dataset; (4) capacity is not the bottleneck, which is what the pre-training
+  audit predicted. The bottleneck is data: Quartzity has 125 training boxes and is unlearned by
+  both models (13 to 15 mAP50), and knot subtypes are confused with each other.
+- Validation vs test: both models scored about 65 on val and 63 to 65 on test, so there is no
+  sign of overfitting to the validation boards.
+- Inference speed: evaluate.py runs batch 16 on the test split (33.2 / 11.7 ms). The training-time
+  validation pass reported 19.1 / 13.7 ms at its own batch size; quote one setting consistently.
+
+Weights (not in git): Kaggle dataset `prakyats/wood-yolo11m-weights` holds run 1 and run 2 YOLO11m
+best.pt; YOLO11s best.pt is in notebook v9 output `persist/yolo11s_1024rect_b32_lr001/`. Local
+copies in `weights_local/`.
+
+GPU used this week: 6.8 h of 30 (all runs plus failed attempts). Remaining: about 23 h.
+
+## 13. If there is appetite for one more round (all optional, none changes the table above)
+
+The test split has now been used once for each model. Any further model would need its own single
+test evaluation, and the write-up must say how many test evaluations were performed in total.
+Options ranked by expected value:
+1. **Nothing more on models; spend the time on the report.** The tie is a legitimate finding.
+2. Multi-seed estimate of the noise floor: retrain YOLO11s with seeds 1 and 2 (1.4 h each) and
+   report val mean and spread. This tells the examiner what a 1.6-point gap means. Val only.
+3. Data-side: drop the 99 sub-5-px boxes (MIN_WH 0.002), rebuild, retrain both. Small, honest.
+4. Quartzity: it will not be fixed by model size. Either report it as a data limitation (10 test
+   boxes) or merge it into a "grain anomaly" class in a clearly labelled secondary experiment.
