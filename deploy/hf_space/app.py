@@ -3,12 +3,15 @@ app.py -- local demo / presentation UI for the wood-defect detectors.
 
 Run:  python app.py        then open http://127.0.0.1:7860
 Needs: weights/yolo11m_final.pt and weights/yolo11s_baseline.pt (see README), CPU is enough.
-Optional: dataset_clean/test/ for the "Test boards" tab (ground truth vs prediction).
+Optional: dataset_clean/test/ (or samples/) for the "Test boards" tab (ground truth vs prediction).
 """
 import glob
+import json
 import os
 import random
+import tempfile
 import time
+from datetime import datetime
 from pathlib import Path
 
 import cv2
@@ -32,7 +35,7 @@ DESCR = {
     "Knot_missing": "hole left by a fallen knot",
     "Crack": "long thin fissure along the grain",
 }
-# one fixed colour per class (BGR for cv2), consistent between GT and prediction drawings
+# one fixed colour per class (BGR for cv2), identical for ground truth and predictions
 COLORS = {
     "Quartzity": (200, 120, 0), "Live_Knot": (0, 200, 0), "Marrow": (255, 0, 200), "Resin": (0, 165, 255),
     "Dead_Knot": (0, 0, 230), "Knot_with_crack": (230, 200, 0), "Knot_missing": (128, 0, 128), "Crack": (0, 230, 230),
@@ -41,6 +44,7 @@ IMGSZ = 1024
 _models = {}
 
 
+# ---------------------------------------------------------------- model + drawing
 def get_model(key):
     if key not in _models:
         p = WEIGHTS[key]
@@ -53,7 +57,7 @@ def get_model(key):
 def draw_boxes(img_bgr, boxes, labels, thickness=None):
     out = img_bgr.copy()
     h, w = out.shape[:2]
-    fs = min(1.4, max(0.4, w / 1400))            # label size follows image size
+    fs = min(1.4, max(0.4, w / 1400))
     thickness = thickness or (1 if w < 600 else 2 if w < 1500 else 3)
     tt = 1 if w < 900 else 2
     for (x1, y1, x2, y2), lab in zip(boxes, labels):
@@ -66,10 +70,28 @@ def draw_boxes(img_bgr, boxes, labels, thickness=None):
         cv2.putText(out, lab, (int(x1) + 2, y0), cv2.FONT_HERSHEY_SIMPLEX, fs, (255, 255, 255), tt, cv2.LINE_AA)
     return out
 
+
+def heatmap(img_bgr, boxes, confs):
+    """Confidence-weighted Gaussian blob per detection, blended over a dimmed image (presentation view)."""
+    h, w = img_bgr.shape[:2]
+    acc = np.zeros((h, w), np.float32)
+    yy, xx = np.mgrid[0:h, 0:w]
+    for (x1, y1, x2, y2), p in zip(boxes, confs):
+        cx, cy = (x1 + x2) / 2, (y1 + y2) / 2
+        sx, sy = max((x2 - x1) / 2.5, 6), max((y2 - y1) / 2.5, 6)
+        acc += float(p) * np.exp(-(((xx - cx) ** 2) / (2 * sx ** 2) + ((yy - cy) ** 2) / (2 * sy ** 2)))
+    if acc.max() > 0:
+        acc = acc / acc.max()
+    hm = cv2.applyColorMap((acc * 255).astype(np.uint8), cv2.COLORMAP_JET)
+    base = (img_bgr * 0.55).astype(np.uint8)
+    alpha = (acc[..., None] * 0.85)
+    return (base * (1 - alpha) + hm * alpha).astype(np.uint8)
+
+
 def pick_imgsz(img_bgr, choice):
     """Training used 2800-px-wide strips at imgsz 1024 (scale 0.37). Upscaling a small photo to 1024 makes
-    defects 2-3x larger than anything seen in training and produces spurious boxes (390x280 photo: 11 boxes
-    at 1024 vs 4 sensible ones at 640), so small inputs run closer to native resolution."""
+    defects 2-3x larger than anything seen in training and produces spurious boxes, so small inputs run
+    closer to native resolution."""
     if choice != "Auto":
         return int(choice)
     side = max(img_bgr.shape[:2])
@@ -82,50 +104,87 @@ def run_one(model, img_bgr, conf, iou, imgsz=IMGSZ):
     t = time.time()
     r = model.predict(img_bgr, imgsz=imgsz, conf=conf, iou=iou, verbose=False, device="cpu")[0]
     dt = time.time() - t
-    boxes = r.boxes.xyxy.cpu().numpy() if len(r.boxes) else np.zeros((0, 4))
-    cls = r.boxes.cls.cpu().numpy().astype(int) if len(r.boxes) else np.zeros(0, int)
-    confs = r.boxes.conf.cpu().numpy() if len(r.boxes) else np.zeros(0)
-    labels = [f"{NAMES[c]} {p:.2f}" for c, p in zip(cls, confs)]
-    rows = [[NAMES[c], round(float(p), 3), int(b[0]), int(b[1]), int(b[2]), int(b[3]), int(b[2] - b[0]), int(b[3] - b[1])]
-            for c, p, b in zip(cls, confs, boxes)]
-    rows.sort(key=lambda x: -x[1])
-    return draw_boxes(img_bgr, boxes, labels), rows, dt, r.speed
+    n = len(r.boxes)
+    boxes = r.boxes.xyxy.cpu().numpy() if n else np.zeros((0, 4))
+    cls = r.boxes.cls.cpu().numpy().astype(int) if n else np.zeros(0, int)
+    confs = r.boxes.conf.cpu().numpy() if n else np.zeros(0)
+    order = np.argsort(-confs)
+    boxes, cls, confs = boxes[order], cls[order], confs[order]
+    dets = [dict(cls=NAMES[c], conf=round(float(p), 3), x1=int(b[0]), y1=int(b[1]), x2=int(b[2]), y2=int(b[3]),
+                 w=int(b[2] - b[0]), h=int(b[3] - b[1])) for c, p, b in zip(cls, confs, boxes)]
+    return dict(boxes=boxes, confs=confs, dets=dets, dt=dt, speed=r.speed, imgsz=imgsz)
 
 
-def summarize(rows):
-    if not rows:
+def per_class(dets, img_shape):
+    """Count and area share per class. Area = union of boxes of that class (mask), so overlaps are not double counted."""
+    h, w = img_shape[:2]
+    rows, total = [], np.zeros((h, w), bool)
+    for name in NAMES:
+        ds = [d for d in dets if d["cls"] == name]
+        if not ds:
+            continue
+        m = np.zeros((h, w), bool)
+        for d in ds:
+            m[d["y1"]:d["y2"], d["x1"]:d["x2"]] = True
+        total |= m
+        rows.append([name, len(ds), round(float(100 * m.mean()), 2), round(float(np.mean([d["conf"] for d in ds])), 3)])
+    return rows, round(float(100 * total.mean()), 2)
+
+
+def coverage_note(cov, n):
+    if n == 0:
+        return "No defects at this threshold."
+    band = "low" if cov < 1 else "moderate" if cov < 3 else "high"
+    return (f"Defect coverage **{cov:.2f}%** of the visible surface ({band} defect load). "
+            "This is a transparent area heuristic, not a validated quality grade.")
+
+
+def summarize(dets):
+    if not dets:
         return "**No defects detected at this confidence.** The board section looks clean, or lower the threshold."
     counts = {}
-    for r in rows:
-        counts[r[0]] = counts.get(r[0], 0) + 1
-    parts = [f"**{k}** x{v}" for k, v in sorted(counts.items(), key=lambda kv: -kv[1])]
-    return f"**{len(rows)} defect(s):** " + ", ".join(parts)
+    for d in dets:
+        counts[d["cls"]] = counts.get(d["cls"], 0) + 1
+    return f"**{len(dets)} defect(s):** " + ", ".join(f"**{k}** x{v}" for k, v in sorted(counts.items(), key=lambda kv: -kv[1]))
 
 
-def detect(image, model_key, conf, iou, compare, size_choice="Auto"):
+# ---------------------------------------------------------------- detect tab
+def detect(image, model_key, conf, iou, compare, size_choice, show_heat):
     if image is None:
         raise gr.Error("Upload a board image first.")
     img_bgr = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
     imgsz = pick_imgsz(img_bgr, size_choice)
     keys = list(WEIGHTS) if compare else [model_key]
-    gallery, tables, notes = [], [], []
+    gallery, det_rows, cls_rows, notes = [], [], [], []
+    report = dict(generated=datetime.now().isoformat(timespec="seconds"), input_size=[int(image.shape[1]), int(image.shape[0])],
+                  imgsz=imgsz, conf=conf, iou=iou, classes=NAMES, models={})
     for k in keys:
-        m = get_model(k)
-        vis, rows, dt, sp = run_one(m, img_bgr, conf, iou, imgsz)
-        gallery.append((cv2.cvtColor(vis, cv2.COLOR_BGR2RGB), k))
-        tables.extend([[k.split(" ")[0]] + r for r in rows])
-        notes.append(f"{k}: {summarize(rows)}  \n_{dt*1000:.0f} ms on CPU (inference {sp['inference']:.0f} ms), "
-                     f"input {image.shape[1]}x{image.shape[0]}, run at imgsz {imgsz}_")
+        res = run_one(get_model(k), img_bgr, conf, iou, imgsz)
+        labels = [f"{d['cls']} {d['conf']:.2f}" for d in res["dets"]]
+        gallery.append((cv2.cvtColor(draw_boxes(img_bgr, res["boxes"], labels), cv2.COLOR_BGR2RGB), f"{k}: detections"))
+        if show_heat:
+            gallery.append((cv2.cvtColor(heatmap(img_bgr, res["boxes"], res["confs"]), cv2.COLOR_BGR2RGB), f"{k}: heatmap"))
+        short = k.split(" ")[0]
+        det_rows += [[short, d["cls"], d["conf"], d["x1"], d["y1"], d["x2"], d["y2"], d["w"], d["h"]] for d in res["dets"]]
+        pc, cov = per_class(res["dets"], img_bgr.shape)
+        cls_rows += [[short] + r for r in pc]
+        notes.append(f"**{k}**: {summarize(res['dets'])}  \n{coverage_note(cov, len(res['dets']))}  \n"
+                     f"_{res['dt']*1000:.0f} ms on CPU (inference {res['speed']['inference']:.0f} ms), run at imgsz {imgsz}_")
+        report["models"][k] = dict(detections=res["dets"], per_class=[dict(cls=r[0], count=r[1], area_pct=r[2], mean_conf=r[3]) for r in pc],
+                                   coverage_pct=cov, latency_ms=round(res["dt"] * 1000), inference_ms=round(res["speed"]["inference"], 1))
     if image.shape[1] < 1000:
         notes.append("_Note: the models were trained on 2800x1024 line-scan strips under even lighting. Small photos, "
-                     "screenshots or stock images are far outside that domain; treat these boxes as indicative only. "
+                     "screenshots or stock images are outside that domain; treat these boxes as indicative only. "
                      "Watermarks and printed text tend to be reported as Resin._")
-    return gallery, tables, "\n\n".join(notes)
+    fd, path = tempfile.mkstemp(prefix="wood_report_", suffix=".json")
+    with os.fdopen(fd, "w", encoding="utf-8") as f:
+        json.dump(report, f, indent=2)
+    return gallery, "\n\n".join(notes), cls_rows, det_rows, path
 
 
-# ---------------- test-board tab (ground truth vs prediction) ----------------
+# ---------------------------------------------------------------- test-board tab
 TEST_IMG = sorted(glob.glob(str(ROOT / "dataset_clean" / "test" / "images" / "*.jpg")))
-if not TEST_IMG:  # deployed copy: a small sample of test boards shipped in samples/{images,labels}
+if not TEST_IMG:  # deployed copy ships a small sample in samples/{images,labels}
     TEST_IMG = sorted(glob.glob(str(ROOT / "samples" / "images" / "*.jpg")))
 
 
@@ -147,22 +206,24 @@ def load_gt(img_path):
 
 def test_board(pick, model_key, conf, iou):
     if not TEST_IMG:
-        raise gr.Error("dataset_clean/test not found next to app.py; this tab needs the local dataset.")
+        raise gr.Error("No test images found (dataset_clean/test or samples/ next to app.py).")
     path = random.choice(TEST_IMG) if pick == "random" else pick
     img, gboxes, glabels = load_gt(path)
     gt_vis = draw_boxes(img, gboxes, glabels)
-    vis, rows, dt, _ = run_one(get_model(model_key), img, conf, iou)
-    board = Path(path).stem.split("_")[1][:4]
+    res = run_one(get_model(model_key), img, conf, iou)
+    vis = draw_boxes(img, res["boxes"], [f"{d['cls']} {d['conf']:.2f}" for d in res["dets"]])
+    board = Path(path).stem.split("_")[-1][:4]
     gt_counts = {}
     for l in glabels:
         gt_counts[l] = gt_counts.get(l, 0) + 1
     gt_txt = ", ".join(f"{k} x{v}" for k, v in gt_counts.items()) or "none (background image)"
-    md = (f"**{Path(path).name}** from board **{board}** (this board was never seen in training).  \n"
-          f"Ground truth: {gt_txt}  \nPrediction: {summarize(rows).replace('**', '')}  ({dt*1000:.0f} ms on CPU)")
-    return [(cv2.cvtColor(gt_vis, cv2.COLOR_BGR2RGB), "Ground truth"), (cv2.cvtColor(vis, cv2.COLOR_BGR2RGB), f"Prediction: {model_key}")], md
+    md = (f"**{Path(path).name}** from board **{board}**, one of the 12 boards never used in training.  \n"
+          f"Ground truth: {gt_txt}  \nPrediction: {summarize(res['dets']).replace('**', '')}  ({res['dt']*1000:.0f} ms on CPU)")
+    return [(cv2.cvtColor(gt_vis, cv2.COLOR_BGR2RGB), "Ground truth (annotator)"),
+            (cv2.cvtColor(vis, cv2.COLOR_BGR2RGB), f"Prediction: {model_key}")], md
 
 
-# ---------------- results tab ----------------
+# ---------------------------------------------------------------- results tab
 def read(p):
     p = ROOT / p
     return p.read_text(encoding="utf-8") if p.exists() else f"_missing: {p.name}_"
@@ -205,26 +266,45 @@ CM_S = str(ROOT / "eval" / "yolo11s_baseline" / "confusion_matrix_normalized.png
 CURVE_M = str(ROOT / "runs_log" / "run2_yolo11m_1024rect_b32_lr001_v8" / "results.png")
 CURVE_S = str(ROOT / "runs_log" / "run3_yolo11s_1024rect_b32_lr001_v9" / "results.png")
 
-with gr.Blocks(title="Wood Defect Detection - YOLO11") as demo:
-    gr.Markdown("# Wood surface defect detection (YOLO11m vs YOLO11s)\n"
-                "Sawn-timber line-scan images, 8 defect classes, trained on a board-level split of the Kodytek et al. (2022) dataset. "
-                "Runs on CPU; about 0.3 s (11s) to 0.6 s (11m) per 2800x1024 image.")
+CSS = """
+.hero {text-align:center; padding:26px 16px 18px; border-radius:14px; margin-bottom:8px;
+       background: linear-gradient(120deg, #3b2a1a 0%, #7a5230 55%, #b8834a 100%); color:#fff;}
+.hero h1 {margin:0 0 6px; font-size:2.1em; letter-spacing:.3px; color:#fff;}
+.hero p {margin:2px 0; opacity:.92; color:#fff;}
+.hero .chips span {display:inline-block; margin:8px 4px 0; padding:4px 10px; border-radius:999px;
+                   background:rgba(255,255,255,.16); font-size:.85em;}
+"""
+HERO = """
+<div class="hero">
+  <h1>Wood Quality AI</h1>
+  <p>Sawn-timber surface defect detection and localisation with YOLO11</p>
+  <div class="chips"><span>8 defect classes</span><span>board-level held-out test</span>
+  <span>YOLO11m vs YOLO11s, identical training</span><span>runs on CPU</span></div>
+</div>
+"""
+
+with gr.Blocks(title="Wood Quality AI - YOLO11 defect detection") as demo:
+    gr.HTML(HERO)
     with gr.Tab("Detect on your image"):
         with gr.Row():
             with gr.Column(scale=1):
                 inp = gr.Image(label="Board image (jpg/png; wide 2800x1024 strips work best)", type="numpy")
                 model_dd = gr.Dropdown(list(WEIGHTS), value=list(WEIGHTS)[0], label="Model")
-                compare = gr.Checkbox(False, label="Run both models side by side")
+                with gr.Row():
+                    compare = gr.Checkbox(False, label="Run both models")
+                    show_heat = gr.Checkbox(True, label="Show defect heatmap")
                 conf = gr.Slider(0.05, 0.9, value=0.35, step=0.05, label="Confidence threshold")
                 iou = gr.Slider(0.3, 0.9, value=0.6, step=0.05, label="NMS IoU")
                 size_dd = gr.Dropdown(["Auto", "1024", "640", "416"], value="Auto",
                                       label="Input size (Auto = 1024 for full strips, near-native for small photos)")
-                btn = gr.Button("Detect", variant="primary")
+                btn = gr.Button("Analyse image", variant="primary")
             with gr.Column(scale=2):
-                out_gal = gr.Gallery(label="Detections", columns=1, height=520, object_fit="contain")
+                out_gal = gr.Gallery(label="Detections and heatmap", columns=1, height=540, object_fit="contain")
                 out_md = gr.Markdown()
+                out_cls = gr.Dataframe(headers=["model", "class", "count", "area %", "mean conf"], label="Per-class breakdown", wrap=True)
                 out_tbl = gr.Dataframe(headers=["model", "class", "conf", "x1", "y1", "x2", "y2", "w", "h"], label="Detections", wrap=True)
-        btn.click(detect, [inp, model_dd, conf, iou, compare, size_dd], [out_gal, out_tbl, out_md])
+                out_json = gr.File(label="Download report (JSON)")
+        btn.click(detect, [inp, model_dd, conf, iou, compare, size_dd, show_heat], [out_gal, out_md, out_cls, out_tbl, out_json])
     with gr.Tab("Test boards: ground truth vs prediction"):
         gr.Markdown("Images from the 12 held-out test boards. Left: annotator's boxes. Right: model output. "
                     "Colours are per class and identical on both sides.")
@@ -248,7 +328,11 @@ with gr.Blocks(title="Wood Defect Detection - YOLO11") as demo:
     with gr.Tab("Legend"):
         gr.Markdown("## Classes and colours\n" + "\n".join(
             f"- <span style='display:inline-block;width:14px;height:14px;background:rgb({c[2]},{c[1]},{c[0]});border:1px solid #333;margin-right:6px'></span>**{n}**: {DESCR[n]}"
-            for n, c in COLORS.items()))
+            for n, c in COLORS.items()) +
+            "\n\n**Defect coverage** = union of predicted boxes as a share of the image area. It is a transparent "
+            "heuristic for the defect load of a board section, not a validated quality grade; no grading rule was "
+            "defined or evaluated in this project.")
+
 
 def _preload():
     for k, p in WEIGHTS.items():
@@ -261,4 +345,4 @@ def _preload():
 
 if __name__ == "__main__":
     _preload()
-    demo.launch(server_name=os.environ.get("GRADIO_HOST", "127.0.0.1"), server_port=int(os.environ.get("PORT", 7860)), show_error=True)
+    demo.launch(server_name=os.environ.get("GRADIO_HOST", "127.0.0.1"), server_port=int(os.environ.get("PORT", 7860)), show_error=True, css=CSS)
