@@ -106,6 +106,8 @@ def detect(image, model_key, conf, iou, compare):
 
 # ---------------- test-board tab (ground truth vs prediction) ----------------
 TEST_IMG = sorted(glob.glob(str(ROOT / "dataset_clean" / "test" / "images" / "*.jpg")))
+if not TEST_IMG:  # deployed copy: a small sample of test boards shipped in samples/{images,labels}
+    TEST_IMG = sorted(glob.glob(str(ROOT / "samples" / "images" / "*.jpg")))
 
 
 def load_gt(img_path):
@@ -228,4 +230,4 @@ with gr.Blocks(title="Wood Defect Detection - YOLO11") as demo:
             for n, c in COLORS.items()))
 
 if __name__ == "__main__":
-    demo.launch(server_name="127.0.0.1", server_port=7860, show_error=True)
+    demo.launch(server_name=os.environ.get("GRADIO_HOST", "127.0.0.1"), server_port=int(os.environ.get("PORT", 7860)), show_error=True)

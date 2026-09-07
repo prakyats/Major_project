@@ -1,0 +1,6 @@
+ultralytics==8.4.142
+gradio>=5
+opencv-python-headless
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch
+torchvision
