@@ -5,7 +5,7 @@ This page is the single place to see what has been done, what every experiment p
 what comes next. It is written for someone who has not followed the work day to day.
 Detailed reasoning for every decision is in [NOTES.md](../NOTES.md).
 
-Last updated: 7 September 2026, 15:10 IST.
+Last updated: 7 September 2026, 18:00 IST.
 
 ## 1. What the project does
 
@@ -27,8 +27,8 @@ F1000Research 10:581, doi:10.12688/f1000research.52903.2. Images are 2800 x 1024
 | Before 7 Sep | First model: YOLO11s at 640 square on CPU, 83 epochs. Test mAP50 62.2. Later found to be trained on a leaky split with wrong class names (section 3). |
 | 7 Sep, morning | Data audit reproduced and corrected. Real class names found. Board-level split built (seed 42). Dataset and scripts uploaded to Kaggle. |
 | 7 Sep, 11:35-14:14 | **Run 1**: YOLO11m, 1024 rect, single T4, 89 epochs. Val mAP50 62.6 on clean boards. |
-| 7 Sep, 15:00 | **Run 2** started: same setup, batch 32, lr0 0.001, patience 40. |
-| Next | Decide final config on validation, evaluate test once per model, optional YOLO11s run with identical config. |
+| 7 Sep, 15:00-17:43 | **Run 2**: batch 32, lr0 0.001, patience 40. Val mAP50 65.7, stable curve. Adopted as final YOLO11m config. |
+| 7 Sep, evening | **Final session**: YOLO11s baseline with identical config, then one test evaluation per model. |
 
 ## 3. Data findings that change how earlier results must be read
 
@@ -131,10 +131,40 @@ Interpretation:
 - The validation curve was noisy, with several 10-15 point drops in mAP50 and two large
   classification-loss spikes, which motivated run 2.
 
-### Run 2: YOLO11m, 1024 rect, batch 32, lr0 0.001, patience 40 (notebook v8), in progress
+### Run 2: YOLO11m, 1024 rect, batch 32, lr0 0.001, patience 40 (notebook v8) -- adopted
 
-Started 7 Sep 15:00 IST. Batch 32 fits in 13.9 GB. Epoch 1 classification loss 4.7 versus
-12.5 at the same point in run 1. Results will be added here when it finishes.
+Artefacts: [runs_log/run2_yolo11m_1024rect_b32_lr001_v8](../runs_log/run2_yolo11m_1024rect_b32_lr001_v8/).
+
+- 100 epochs in 2.64 h, no early stop; best epoch 73. Training curve stable: no mAP collapses,
+  peak validation classification loss 4.5 versus 21.5 in run 1.
+- Inference on T4: 19.1 ms per image.
+- **Test set still not evaluated**; it is evaluated once in the final session (below).
+
+Validation results, best.pt, with run 1 alongside:
+
+| Class | Boxes | P | R | mAP50 | mAP50-95 | run 1 mAP50 |
+|---|---:|---:|---:|---:|---:|---:|
+| **all** | 1591 | 67.9 | 62.7 | **65.7** | **36.2** | 62.6 |
+| Quartzity | 20 | 11.8 | 5.0 | 5.4 | 3.2 | 4.3 |
+| Live_Knot | 713 | 83.1 | 71.4 | 77.6 | 34.7 | 76.7 |
+| Marrow | 64 | 70.8 | 75.0 | 76.0 | 48.7 | 72.8 |
+| Resin | 88 | 74.1 | 71.6 | 71.9 | 34.9 | 71.2 |
+| Dead_Knot | 482 | 77.7 | 77.8 | 83.4 | 42.7 | 81.8 |
+| Knot_with_crack | 98 | 70.7 | 59.2 | 64.3 | 43.1 | 61.7 |
+| Knot_missing | 15 | 87.9 | 80.0 | 88.8 | 52.9 | 81.4 |
+| Crack | 111 | 66.8 | 61.3 | 58.0 | 29.4 | 51.1 |
+
+![Normalised confusion matrix, run 2](../runs_log/run2_yolo11m_1024rect_b32_lr001_v8/confusion_matrix_normalized.png)
+
+Every class improved or held. The biggest gains are Knot_missing (+7.4), Crack (+6.9) and
+Marrow (+3.2). Quartzity remains unlearned at 5.4 mAP50: too few examples of a faint,
+grain-aligned streak. This configuration (batch 32, lr0 0.001, patience 40) is adopted as the
+final YOLO11m setup.
+
+### Final session (notebook v9): YOLO11s baseline with the identical configuration, then test
+
+Planned: train YOLO11s with exactly the run 2 settings, then evaluate both models on the
+held-out test boards exactly once. Results will be added here.
 
 ## 7. Rules followed throughout
 
@@ -146,13 +176,12 @@ Started 7 Sep 15:00 IST. Batch 32 fits in 13.9 GB. Epoch 1 classification loss 4
 
 ## 8. Next steps
 
-1. Compare run 2 with run 1 on validation; if stable and not worse, adopt its settings.
-2. Optionally one more iteration (drop sub-5-pixel boxes, or imgsz 1280 rect for the thin
-   classes), decided on validation.
-3. Evaluate the final YOLO11m on the test split once; publish the per-class table here.
-4. If GPU quota remains (about 24 h of the weekly 30 h after run 2), train YOLO11s with the
-   identical final configuration and evaluate it once, giving the baseline-vs-proposed table.
-5. Rework the synopsis: sawn timber instead of plywood, real class names, YOLO11, citation.
+1. Done: run 2 adopted as the final YOLO11m configuration.
+2. In progress: YOLO11s trained with the identical configuration (about 2 GPU hours), then
+   one test evaluation per model. Publish the baseline-vs-proposed per-class table here.
+3. Optional ablations if quota remains (about 22 h of the weekly 30 h): drop sub-5-pixel boxes,
+   imgsz 1280 rect for the thin classes. These would be reported separately, not as the main table.
+4. Rework the synopsis: sawn timber instead of plywood, real class names, YOLO11, citation.
 
 ## 9. Where things are
 

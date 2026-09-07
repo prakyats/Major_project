@@ -40,6 +40,7 @@ def main():
     ap.add_argument("--lr0", type=float, default=CFG["lr0"], help="override CFG lr0 (log the reason in NOTES.md)")
     ap.add_argument("--patience", type=int, default=CFG["patience"], help="override CFG patience")
     ap.add_argument("--imgsz", type=int, default=CFG["imgsz"], help="override CFG imgsz (rect stays on)")
+    ap.add_argument("--model", default="yolo11m.pt", help="pretrained checkpoint, e.g. yolo11s.pt for the baseline run")
     ap.add_argument("--persist", default=None, help="optional dir to copy weights+results into after training")
     a = ap.parse_args()
 
@@ -53,8 +54,8 @@ def main():
         model = YOLO(str(last))
         model.train(resume=True)
     else:
-        print("fresh run from COCO-pretrained yolo11m.pt")
-        model = YOLO("yolo11m.pt")
+        print(f"fresh run from COCO-pretrained {a.model}")
+        model = YOLO(a.model)
         model.train(data=a.data, **cfg)
 
     if a.persist:

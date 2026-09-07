@@ -10,3 +10,4 @@ __pycache__/
 kaggle_upload/dataset/*.zip
 weights_local/
 ~$*
+kaggle_upload/weights/*.pt

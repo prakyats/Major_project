@@ -166,3 +166,39 @@ under a different run name if 32 OOMs. Scripts dataset version 2 adds `--lr0 --p
 flags to train_yolo11m.py (CFG defaults unchanged).
 The YOLO11s run must use the same three flags before the final comparison.
 
+## 10. Run 2 result (notebook v8, finished 2026-09-07 17:43 IST) -- ADOPTED AS FINAL YOLO11m CONFIG
+
+Batch 32 fitted in 13.9 GB. 100 epochs in 2.64 h (no early stop). best.pt = epoch 73 by fitness;
+max val mAP50 66.0 at epoch 69. No mAP collapses (largest epoch-to-epoch drop under 8 points vs
+five drops of 10-15 in run 1); val cls loss peaked at 4.45 vs 21.5. Artefacts:
+`runs_log/run2_yolo11m_1024rect_b32_lr001_v8/`.
+
+Validation, best.pt (run 1 mAP50 in the last column for comparison):
+
+| Class | Boxes | P | R | mAP50 | mAP50-95 | run 1 mAP50 |
+|---|---:|---:|---:|---:|---:|---:|
+| **all** | 1591 | 67.9 | 62.7 | **65.7** | **36.2** | 62.6 |
+| Quartzity | 20 | 11.8 | 5.0 | 5.4 | 3.2 | 4.3 |
+| Live_Knot | 713 | 83.1 | 71.4 | 77.6 | 34.7 | 76.7 |
+| Marrow | 64 | 70.8 | 75.0 | 76.0 | 48.7 | 72.8 |
+| Resin | 88 | 74.1 | 71.6 | 71.9 | 34.9 | 71.2 |
+| Dead_Knot | 482 | 77.7 | 77.8 | 83.4 | 42.7 | 81.8 |
+| Knot_with_crack | 98 | 70.7 | 59.2 | 64.3 | 43.1 | 61.7 |
+| Knot_missing | 15 | 87.9 | 80.0 | 88.8 | 52.9 | 81.4 |
+| Crack | 111 | 66.8 | 61.3 | 58.0 | 29.4 | 51.1 |
+
+Every class improved or held. Crack +6.9, Knot_missing +7.4, Marrow +3.2, Knot_with_crack +2.6.
+Quartzity is still not learned (5.4). Inference 19.1 ms/img on T4.
+
+Decision: final YOLO11m configuration = CFG with batch 32, lr0 0.001, patience 40. No further
+YOLO11m iterations before the test evaluation; remaining quota goes to the YOLO11s baseline with
+the identical configuration, then one test evaluation per model in the same session.
+
+## 11. Final session plan (notebook v9)
+
+1. Train YOLO11s: `--model yolo11s.pt --batch 32 --lr0 0.001 --patience 40`, name
+   `yolo11s_1024rect_b32_lr001`. Scripts dataset v3 adds the `--model` flag.
+2. Evaluate test split ONCE for each model with evaluate.py (conf 0.001, iou 0.6, rect, 1024):
+   YOLO11m best.pt from run 2 (uploaded as Kaggle dataset `prakyats/wood-yolo11m-weights`),
+   YOLO11s best.pt from step 1.
+3. Commit eval/ tables, both runs' artefacts, and the final table in docs/PROGRESS.md.
