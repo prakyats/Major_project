@@ -1,0 +1,12 @@
+data/
+dataset_clean/
+dataset_clean.zip
+*.zip
+outputs/
+runs/
+*.pt
+__pycache__/
+*.pyc
+kaggle_upload/dataset/*.zip
+weights_local/
+~$*

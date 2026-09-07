@@ -1,0 +1,17 @@
+{
+ "id": "prakyats/yolo11m-wood-train",
+ "title": "yolo11m-wood-train",
+ "code_file": "yolo11m-wood-train.ipynb",
+ "language": "python",
+ "kernel_type": "notebook",
+ "is_private": true,
+ "enable_gpu": true,
+ "enable_internet": true,
+ "dataset_sources": [
+  "prakyats/wood-defects-clean",
+  "prakyats/wood-defects-scripts"
+ ],
+ "competition_sources": [],
+ "kernel_sources": [],
+ "machine_shape": "NvidiaTeslaT4"
+}

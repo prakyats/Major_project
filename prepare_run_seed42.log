@@ -1,0 +1,10 @@
+images: 4000  boxes kept: 9053  degenerate dropped: 158
+boards: 81
+
+board overlap across splits: NONE (asserted)
+split   boards  images  Quartzi  Live_Kn   Marrow    Resin  Dead_Kn  Knot_wi  Knot_mi    Crack
+train       52    2817      125     2899       94      489     2071      377       78      306
+val         17     714       20      713       64       88      482       98       15      111
+test        12     469       10      406       46       69      343       30       24       95
+
+wrote dataset_clean\data.yaml and board_split.json
