@@ -11,3 +11,5 @@ kaggle_upload/dataset/*.zip
 weights_local/
 ~$*
 kaggle_upload/weights/*.pt
+weights/
+.gradio/

@@ -59,3 +59,16 @@ Download `eval/test_metrics.md`, `results.csv`, `confusion_matrix.png`, `PR_curv
 - Day 4–5: buffer for one rerun if something is off (e.g. batch OOM, class-name fix).
 - Day 6–7: write-up. Remember: cite Kodytek, Bodzas & Bilik (2022) F1000Research 10:581,
   state the real class mapping, and replace "plywood" wording.
+
+## 4. Demo / presentation UI (local, CPU is enough)
+```
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+pip install ultralytics gradio
+python app.py        # then open http://127.0.0.1:7860
+```
+Put the weights in `weights/`: `yolo11m_final.pt` (run 2 best.pt) and `yolo11s_baseline.pt` (run 3 best.pt),
+both downloadable from the Kaggle notebook outputs / dataset `prakyats/wood-yolo11m-weights`.
+Tabs: **Detect on your image** (upload any board photo, choose model, confidence slider, optional
+side-by-side of both models), **Test boards** (ground truth vs prediction on the 12 unseen boards; needs
+`dataset_clean/test/` locally), **Results** (final tables, confusion matrices, training curves), **Legend**.
+About 0.3 s (YOLO11s) to 0.6 s (YOLO11m) per 2800x1024 image on a laptop CPU.
