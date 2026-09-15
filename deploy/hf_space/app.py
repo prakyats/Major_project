@@ -277,7 +277,7 @@ CSS = """
 HERO = """
 <div class="hero">
   <h1>Wood Quality AI</h1>
-  <p>Sawn-timber surface defect detection and localisation with YOLO11</p>
+  <p>Wood surface defect detection and localisation with YOLO11</p>
   <div class="chips"><span>8 defect classes</span><span>board-level held-out test</span>
   <span>YOLO11m vs YOLO11s, identical training</span><span>runs on CPU</span></div>
 </div>
