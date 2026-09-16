@@ -158,12 +158,13 @@ def detect(image, model_key, conf, iou, compare, size_choice, show_heat):
     gallery, det_rows, cls_rows, notes = [], [], [], []
     report = dict(generated=datetime.now().isoformat(timespec="seconds"), input_size=[int(image.shape[1]), int(image.shape[0])],
                   imgsz=imgsz, conf=conf, iou=iou, classes=NAMES, models={})
+    shots = []          # (label, RGB image) in display order
     for k in keys:
         res = run_one(get_model(k), img_bgr, conf, iou, imgsz)
         labels = [f"{d['cls']} {d['conf']:.2f}" for d in res["dets"]]
-        gallery.append((cv2.cvtColor(draw_boxes(img_bgr, res["boxes"], labels), cv2.COLOR_BGR2RGB), f"{k}: detections"))
+        shots.append((f"{k} - detections", cv2.cvtColor(draw_boxes(img_bgr, res["boxes"], labels), cv2.COLOR_BGR2RGB)))
         if show_heat:
-            gallery.append((cv2.cvtColor(heatmap(img_bgr, res["boxes"], res["confs"]), cv2.COLOR_BGR2RGB), f"{k}: heatmap"))
+            shots.append((f"{k} - defect heatmap", cv2.cvtColor(heatmap(img_bgr, res["boxes"], res["confs"]), cv2.COLOR_BGR2RGB)))
         short = k.split(" ")[0]
         det_rows += [[short, d["cls"], d["conf"], d["x1"], d["y1"], d["x2"], d["y2"], d["w"], d["h"]] for d in res["dets"]]
         pc, cov = per_class(res["dets"], img_bgr.shape)
@@ -179,7 +180,14 @@ def detect(image, model_key, conf, iou, compare, size_choice, show_heat):
     fd, path = tempfile.mkstemp(prefix="wood_report_", suffix=".json")
     with os.fdopen(fd, "w", encoding="utf-8") as f:
         json.dump(report, f, indent=2)
-    return gallery, "\n\n".join(notes), cls_rows, det_rows, path
+    # fill the four image slots; hide the ones not used so nothing is cropped or squeezed
+    slots = []
+    for i in range(4):
+        if i < len(shots):
+            slots.append(gr.update(value=shots[i][1], label=shots[i][0], visible=True))
+        else:
+            slots.append(gr.update(value=None, visible=False))
+    return (*slots, "\n\n".join(notes), cls_rows, det_rows, path)
 
 
 # ---------------------------------------------------------------- test-board tab
@@ -219,8 +227,9 @@ def test_board(pick, model_key, conf, iou):
     gt_txt = ", ".join(f"{k} x{v}" for k, v in gt_counts.items()) or "none (background image)"
     md = (f"**{Path(path).name}** from board **{board}**, one of the 12 boards never used in training.  \n"
           f"Ground truth: {gt_txt}  \nPrediction: {summarize(res['dets']).replace('**', '')}  ({res['dt']*1000:.0f} ms on CPU)")
-    return [(cv2.cvtColor(gt_vis, cv2.COLOR_BGR2RGB), "Ground truth (annotator)"),
-            (cv2.cvtColor(vis, cv2.COLOR_BGR2RGB), f"Prediction: {model_key}")], md
+    return (cv2.cvtColor(gt_vis, cv2.COLOR_BGR2RGB),
+            gr.update(value=cv2.cvtColor(vis, cv2.COLOR_BGR2RGB), label=f"Prediction: {model_key}"),
+            md)
 
 
 # ---------------------------------------------------------------- results tab
@@ -299,12 +308,16 @@ with gr.Blocks(title="Wood Quality AI - YOLO11 defect detection") as demo:
                                       label="Input size (Auto = 1024 for full strips, near-native for small photos)")
                 btn = gr.Button("Analyse image", variant="primary")
             with gr.Column(scale=2):
-                out_gal = gr.Gallery(label="Detections and heatmap", columns=1, height=540, object_fit="contain")
+                out_img1 = gr.Image(label="Detections", buttons=["fullscreen", "download"])
+                out_img2 = gr.Image(label="Defect heatmap", buttons=["fullscreen", "download"], visible=False)
+                out_img3 = gr.Image(label="Second model", buttons=["fullscreen", "download"], visible=False)
+                out_img4 = gr.Image(label="Second model heatmap", buttons=["fullscreen", "download"], visible=False)
                 out_md = gr.Markdown()
                 out_cls = gr.Dataframe(headers=["model", "class", "count", "area %", "mean conf"], label="Per-class breakdown", wrap=True)
                 out_tbl = gr.Dataframe(headers=["model", "class", "conf", "x1", "y1", "x2", "y2", "w", "h"], label="Detections", wrap=True)
                 out_json = gr.File(label="Download report (JSON)")
-        btn.click(detect, [inp, model_dd, conf, iou, compare, size_dd, show_heat], [out_gal, out_md, out_cls, out_tbl, out_json])
+        btn.click(detect, [inp, model_dd, conf, iou, compare, size_dd, show_heat],
+                  [out_img1, out_img2, out_img3, out_img4, out_md, out_cls, out_tbl, out_json])
     with gr.Tab("Test boards: ground truth vs prediction"):
         gr.Markdown("Images from the 12 held-out test boards. Left: annotator's boxes. Right: model output. "
                     "Colours are per class and identical on both sides.")
@@ -314,9 +327,10 @@ with gr.Blocks(title="Wood Quality AI - YOLO11 defect detection") as demo:
             conf2 = gr.Slider(0.05, 0.9, value=0.35, step=0.05, label="Confidence", scale=1)
             iou2 = gr.Slider(0.3, 0.9, value=0.6, step=0.05, label="NMS IoU", scale=1)
         btn2 = gr.Button("Show", variant="primary")
-        gal2 = gr.Gallery(label="Ground truth (left) vs prediction (right)", columns=1, height=620, object_fit="contain")
+        gt_img = gr.Image(label="Ground truth (annotator)", buttons=["fullscreen", "download"])
+        pred_img = gr.Image(label="Prediction", buttons=["fullscreen", "download"])
         md2 = gr.Markdown()
-        btn2.click(test_board, [pick, model_dd2, conf2, iou2], [gal2, md2])
+        btn2.click(test_board, [pick, model_dd2, conf2, iou2], [gt_img, pred_img, md2])
     with gr.Tab("Results"):
         gr.Markdown(RESULTS_MD)
         with gr.Row():
