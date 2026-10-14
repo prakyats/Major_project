@@ -41,12 +41,13 @@ def main():
     ap.add_argument("--patience", type=int, default=CFG["patience"], help="override CFG patience")
     ap.add_argument("--imgsz", type=int, default=CFG["imgsz"], help="override CFG imgsz (rect stays on)")
     ap.add_argument("--model", default="yolo11m.pt", help="pretrained checkpoint, e.g. yolo11s.pt for the baseline run")
+    ap.add_argument("--seed", type=int, default=CFG["seed"], help="override CFG seed (repeat runs for run-to-run spread)")
     ap.add_argument("--persist", default=None, help="optional dir to copy weights+results into after training")
     a = ap.parse_args()
 
     run_dir = Path(a.project) / a.name
     last = run_dir / "weights" / "last.pt"
-    cfg = dict(CFG, epochs=a.epochs, batch=a.batch, lr0=a.lr0, patience=a.patience, imgsz=a.imgsz,
+    cfg = dict(CFG, epochs=a.epochs, batch=a.batch, lr0=a.lr0, patience=a.patience, imgsz=a.imgsz, seed=a.seed,
                device=a.device, project=a.project, name=a.name, exist_ok=True)
 
     if last.exists():

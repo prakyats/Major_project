@@ -1,0 +1,10 @@
+{
+  "val_map50": {
+    "yolo11s_4cls_sqrt (1024, notebook v1)": 75.3,
+    "yolo11s_4cls_plain (1024, notebook v1)": 73.1,
+    "yolo11s_4cls_sqrt_1280": 74.6,
+    "yolo11s_4cls_plain_1280": 71.5
+  },
+  "final": "yolo11s_4cls_sqrt (1024, notebook v1)",
+  "rule": "highest 4-class val mAP50 among sqrt/plain at 1024 and 1280"
+}

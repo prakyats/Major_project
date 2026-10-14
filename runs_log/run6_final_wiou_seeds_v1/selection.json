@@ -1,0 +1,14 @@
+{
+  "val_map50": {
+    "yolo11s_4cls_sqrt_1024_wiou": 74.6,
+    "yolo11s_4cls_sqrt_1024_seed1": 74.8,
+    "yolo11s_4cls_sqrt_1024_seed2": 75.6
+  },
+  "seed_val_map50": [
+    75.3,
+    74.8,
+    75.6
+  ],
+  "seed_spread": 0.7999999999999972,
+  "wiou_adopted": false
+}

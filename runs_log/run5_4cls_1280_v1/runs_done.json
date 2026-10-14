@@ -1,0 +1,17 @@
+{
+  "done": {
+    "yolo11s_4cls_sqrt_1280": [
+      "sqrt",
+      1280
+    ],
+    "yolo11s_4cls_plain_1280": [
+      "plain",
+      1280
+    ]
+  },
+  "hours": {
+    "yolo11s_4cls_sqrt_1280": 2.1,
+    "yolo11s_4cls_plain_1280": 2.17
+  },
+  "identical_build_to_v1": true
+}

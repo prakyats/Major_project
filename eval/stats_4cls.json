@@ -1,0 +1,126 @@
+{
+  "val": {
+    "map50": {
+      "base": 73.8,
+      "plain": 73.1,
+      "sqrt": 75.6
+    },
+    "map": {
+      "base": 35.5,
+      "plain": 35.6,
+      "sqrt": 36.4
+    },
+    "tests": {
+      "sqrt - plain": {
+        "boards": 17,
+        "map50_diff_ci": [
+          -0.1,
+          4.9
+        ],
+        "map_diff_ci": [
+          -0.5,
+          2.6
+        ],
+        "share_not_better": 0.03,
+        "boards_better": 9,
+        "boards_worse": 8,
+        "wilcoxon_p": 0.7466583251953125,
+        "wilcoxon_n": 17
+      },
+      "sqrt - base": {
+        "boards": 17,
+        "map50_diff_ci": [
+          -0.9,
+          4.5
+        ],
+        "map_diff_ci": [
+          -0.6,
+          2.4
+        ],
+        "share_not_better": 0.083,
+        "boards_better": 8,
+        "boards_worse": 9,
+        "wilcoxon_p": 0.54766845703125,
+        "wilcoxon_n": 17
+      },
+      "plain - base": {
+        "boards": 17,
+        "map50_diff_ci": [
+          -2.4,
+          1.2
+        ],
+        "map_diff_ci": [
+          -2.1,
+          1.9
+        ],
+        "share_not_better": 0.729,
+        "boards_better": 7,
+        "boards_worse": 10,
+        "wilcoxon_p": 0.2246856689453125,
+        "wilcoxon_n": 17
+      }
+    }
+  },
+  "test": {
+    "map50": {
+      "base": 69.6,
+      "plain": 71.8,
+      "sqrt": 69.2
+    },
+    "map": {
+      "base": 33.3,
+      "plain": 33.6,
+      "sqrt": 33.3
+    },
+    "tests": {
+      "sqrt - plain": {
+        "boards": 12,
+        "map50_diff_ci": [
+          -4.6,
+          0.3
+        ],
+        "map_diff_ci": [
+          -1.7,
+          1.9
+        ],
+        "share_not_better": 0.96,
+        "boards_better": 4,
+        "boards_worse": 8,
+        "wilcoxon_p": 0.5693359375,
+        "wilcoxon_n": 12
+      },
+      "sqrt - base": {
+        "boards": 12,
+        "map50_diff_ci": [
+          -2.8,
+          1.9
+        ],
+        "map_diff_ci": [
+          -2.0,
+          2.2
+        ],
+        "share_not_better": 0.608,
+        "boards_better": 5,
+        "boards_worse": 7,
+        "wilcoxon_p": 0.7333984375,
+        "wilcoxon_n": 12
+      },
+      "plain - base": {
+        "boards": 12,
+        "map50_diff_ci": [
+          -1.4,
+          4.4
+        ],
+        "map_diff_ci": [
+          -2.3,
+          2.2
+        ],
+        "share_not_better": 0.135,
+        "boards_better": 6,
+        "boards_worse": 6,
+        "wilcoxon_p": 0.6220703125,
+        "wilcoxon_n": 12
+      }
+    }
+  }
+}

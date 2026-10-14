@@ -1,0 +1,9 @@
+{
+  "val_map50": {
+    "full": 71.9,
+    "plain": 73.1,
+    "sqrt": 75.3
+  },
+  "chosen": "sqrt",
+  "rule": "higher 4-class val mAP50 of full vs sqrt"
+}

@@ -1,0 +1,17 @@
+{
+ "id": "prakyats/yolo11s-wood-4cls-balanced",
+ "title": "yolo11s-wood-4cls-balanced",
+ "code_file": "yolo11s-wood-4cls-balanced.ipynb",
+ "language": "python",
+ "kernel_type": "notebook",
+ "is_private": true,
+ "enable_gpu": true,
+ "enable_internet": true,
+ "dataset_sources": [
+  "prakyats/wood-defects-clean",
+  "prakyats/wood-defects-scripts"
+ ],
+ "competition_sources": [],
+ "kernel_sources": [],
+ "machine_shape": "NvidiaTeslaT4"
+}

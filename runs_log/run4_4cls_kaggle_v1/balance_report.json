@@ -1,0 +1,82 @@
+{
+  "val": {
+    "Live_Knot": 713,
+    "Dead_Knot": 482,
+    "Resin": 88,
+    "Crack": 111
+  },
+  "test": {
+    "Live_Knot": 406,
+    "Dead_Knot": 343,
+    "Resin": 69,
+    "Crack": 95
+  },
+  "train_plain": {
+    "Live_Knot": 2899,
+    "Dead_Knot": 2071,
+    "Resin": 489,
+    "Crack": 306
+  },
+  "train_full": {
+    "Live_Knot": 2899,
+    "Dead_Knot": 3071,
+    "Resin": 2899,
+    "Crack": 2899
+  },
+  "synth_full": {
+    "target": {
+      "Live_Knot": 2899,
+      "Dead_Knot": 2899,
+      "Resin": 2899,
+      "Crack": 2899
+    },
+    "synthetic_images": 1488,
+    "canvases_available": 566,
+    "pasted": {
+      "Dead_Knot": 364,
+      "Resin": 2318,
+      "Crack": 2550
+    },
+    "canvas_boxes": {
+      "Dead_Knot": 636,
+      "Resin": 92,
+      "Crack": 43
+    },
+    "blend_modes": {
+      "poisson": 2653,
+      "alpha": 2579
+    },
+    "max_reuse_per_source": 17
+  },
+  "train_sqrt": {
+    "Live_Knot": 2899,
+    "Dead_Knot": 2470,
+    "Resin": 1191,
+    "Crack": 942
+  },
+  "synth_sqrt": {
+    "target": {
+      "Live_Knot": 2899,
+      "Dead_Knot": 2450,
+      "Resin": 1191,
+      "Crack": 942
+    },
+    "synthetic_images": 426,
+    "canvases_available": 566,
+    "pasted": {
+      "Dead_Knot": 214,
+      "Resin": 677,
+      "Crack": 621
+    },
+    "canvas_boxes": {
+      "Dead_Knot": 185,
+      "Resin": 25,
+      "Crack": 15
+    },
+    "blend_modes": {
+      "poisson": 721,
+      "alpha": 791
+    },
+    "max_reuse_per_source": 5
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "done": {
+    "full": "yolo11s_4cls_full",
+    "plain": "yolo11s_4cls_plain",
+    "sqrt": "yolo11s_4cls_sqrt"
+  },
+  "hours": {
+    "yolo11s_4cls_full": 2.39,
+    "yolo11s_4cls_plain": 1.43,
+    "yolo11s_4cls_sqrt": 1.58
+  }
+}

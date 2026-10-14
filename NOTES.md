@@ -270,3 +270,199 @@ Options ranked by expected value:
 3. Data-side: drop the 99 sub-5-px boxes (MIN_WH 0.002), rebuild, retrain both. Small, honest.
 4. Quartzity: it will not be fixed by model size. Either report it as a data limitation (10 test
    boxes) or merge it into a "grain anomaly" class in a clearly labelled secondary experiment.
+
+## 14. Final phase (2026-10-07): 4-class balanced dataset, YOLO11s (team decision)
+
+Team decision for the final review: deploy YOLO11s (tied with 11m on test, 2.8x faster), restrict to
+the 4 most frequent defect classes, balance them with augmentation, and retrain.
+
+**Classes kept** (box counts in dataset_clean, all splits): Live_Knot 4018, Dead_Knot 2896, Resin 646,
+Crack 512. Knot_with_crack is 5th with 505 (it was 4th before the degenerate-box filter removed 37 of
+its boxes). Dropped: Knot_with_crack, Marrow, Quartzity, Knot_missing. New ids 0-3 in that order.
+
+**Fair baseline.** Per-class AP is computed class by class, so the 8-class YOLO11s baseline's AP on
+these 4 classes is unchanged by dropping the others. The 4-class bar to beat is therefore the mean of
+those 4 rows, NOT the 8-class 64.6:
+
+| YOLO11s 8-class baseline, 4 kept classes | Live_Knot | Dead_Knot | Resin | Crack | **4-class mean** |
+|---|---:|---:|---:|---:|---:|
+| val mAP50 / mAP50-95 | 78.1 / 34.6 | 83.7 / 42.8 | 74.9 / 37.8 | 53.3 / 26.9 | **72.5 / 35.5** |
+| test mAP50 / mAP50-95 | 75.8 / 32.6 | 89.1 / 43.3 | 60.4 / 29.5 | 53.0 / 26.3 | **69.6 / 32.9** |
+
+**Balancing** (`build_balanced.py`, seed 42): grain-aware copy-paste of real defect crops from the train
+split onto defect-free train images (canvases). Line-scan geometry checked on the previews: the board
+runs top to bottom (grain and cracks vertical), and the left/right ~150-190 px of every image is black
+conveyor background, so crops come only from inside the board and are pasted only inside the canvas
+board. No rotation, no vertical flip; horizontal flip and +-10 % scale only. Crops never overlap any box
+of the original 8 classes. Blending alternates Poisson cloning / feathered alpha (defect box opaque,
+context margin fading out). Val and test are untouched real images with 4-class labels.
+Two balance levels, plus the control:
+
+| train set | Live_Knot | Dead_Knot | Resin | Crack | images | max:min |
+|---|---:|---:|---:|---:|---:|---:|
+| plain (control) | 2899 | 2071 | 489 | 306 | 2817 | 9.47 |
+| full: every class to n_max | 2899 | ~3067 | 2899 | 2899 | ~4315 | 1.06 |
+| sqrt: n_c -> sqrt(n_c * n_max) | 2899 | ~2462 | 1191 | 942 | ~3241 | 3.08 |
+
+Only 199 of the 306 train cracks are isolated enough to crop cleanly, so full balance reuses each crack
+crop up to ~13 times (with flip/scale/blend variation); sqrt reuses at most 4 times. That is the reason
+for running both. Exact counts of the Kaggle build are in its `balance_report.json`.
+
+**Pre-registered protocol (fixed before training):** three YOLO11s runs with the baseline config
+(1024 rect, batch 32, lr0 0.001, patience 40, seed 42): full, plain, sqrt. Between full and sqrt, the one
+with the higher 4-class val mAP50 is the balanced model. Test is evaluated once for the plain control and
+once for the chosen balanced model. Test evaluations in total after this: 4 (11s 8-class, 11m 8-class,
+11s 4-class plain, 11s 4-class balanced). Kaggle notebook `prakyats/yolo11s-wood-4cls-balanced`.
+
+Correction to the BRI discussion: the position penalty must measure distance to the board's side edges
+(where the board meets the black background), not to the image top/bottom, which are tile cuts along
+the board length. Ma'am's code with edges="ends" uses the image left/right, which in these images is the
+black background, not a board end.
+
+## 15. Result of the 4-class balanced experiment (Kaggle `yolo11s-wood-4cls-balanced` v1, 2026-10-07)
+
+Ran 11:41-17:14 IST on one T4. Runs (all early-stopped, no errors): full 97 epochs / 2.39 h (best ep 46),
+plain 91 epochs / 1.43 h (best ep 51), sqrt 90 epochs / 1.58 h (best ep 50). The Kaggle build produced the
+same class counts as the local build (balance_report.json) but different canvases (OpenCV version on Kaggle
+changes the board mask by a few px, so the seeded random stream diverges); the Kaggle build is the one trained on.
+
+Validation (4-class mAP50 / mAP50-95), pre-registered choice = sqrt (75.3 > full 71.9):
+
+| model | Live_Knot | Dead_Knot | Resin | Crack | **mAP50** | mAP50-95 |
+|---|---:|---:|---:|---:|---:|---:|
+| 8-class YOLO11s baseline, 4 classes scored | 78.1 | 83.7 | 74.9 | 53.3 | 72.5 | 35.5 |
+| 4-class plain | 80.3 | 82.0 | 75.6 | 54.4 | 73.1 | 35.4 |
+| 4-class full balance (1.06:1) | 78.8 | 83.1 | 70.4 | 55.4 | 71.9 | 36.0 |
+| **4-class sqrt balance (3.1:1)** | 79.9 | 81.4 | 79.5 | 60.5 | **75.3** | 36.0 |
+
+Test, evaluated once per model (plain control + chosen sqrt):
+
+| model | Live_Knot | Dead_Knot | Resin | Crack | **mAP50** | mAP50-95 | P | R |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| 8-class YOLO11s baseline, 4 classes scored | 75.8 | 89.1 | 60.4 | 53.0 | 69.6 | 32.9 | -- | -- |
+| 4-class plain | 74.5 | 89.4 | 63.7 | 59.2 | **71.7** | 33.4 | 76.7 | 70.0 |
+| 4-class sqrt balance | 76.4 | 87.5 | 64.2 | 48.7 | 69.2 | 33.1 | 74.8 | 69.4 |
+
+Reading:
+- The val gain of sqrt balancing (+2.2 over plain, +2.8 over the 8-class baseline; Crack +6.1, Resin +3.9)
+  did NOT carry over to test (-2.5 vs plain, -0.4 vs baseline). Almost the whole swing is Crack:
+  val +6.1, test -10.5. Resin is +3.9 val / +0.5 test; Live_Knot +1.9 test.
+- mAP50-95 is flat everywhere (val 35.4-36.0, test 32.9-33.4): no model is reliably better at strict IoU.
+- Full balance (each of 160 clean crack crops reused up to 17x) was the worst on val, as expected from
+  duplicate memorisation; the milder sqrt level was better. More copies of the same few cracks add no new
+  information.
+- Restricting to 4 classes (plain) is +0.6 val / +2.1 test over the 8-class model on the same classes.
+- Do not report the test-best model (plain) as "chosen": the choice was fixed on val before testing.
+  Test evaluations in total now: 4.
+- Bootstrap CIs over boards: see eval/bootstrap_4cls_{test,val}.md (bootstrap_ci.py).
+
+## 16. Resolution step: imgsz 1280 rect (Kaggle `yolo11s-wood-4cls-1280` v1, started 2026-10-07 17:28 IST)
+
+Team choice after section 15: raise the input resolution. The source strips are 2800 x 1024; imgsz 1024 rect trains
+at 1024 x 384 (37 % of native width), imgsz 1280 rect at 1280 x 480 (46 %). Median crack width goes from ~26 px to
+~33 px. GPU memory at 1024 / batch 32 was 7.25 GB of 14.9, so 1280 (~1.56x pixels, ~11 GB) keeps batch 32;
+the notebook retries at batch 16 only if a run fails.
+Same data (build_balanced.py unchanged, seed 42, rebuilt on Kaggle; preview names compared with v1 to confirm an
+identical build), same config otherwise. Runs: sqrt @1280, plain @1280.
+
+**Pre-registered rule (fixed before training):** final 4-class model = highest 4-class val mAP50 among
+sqrt@1024 (75.3), plain@1024 (73.1), sqrt@1280, plain@1280. Both 1280 models evaluated on test once at imgsz 1280.
+Test evaluations in total after this: 6.
+
+## 17. Mathematical model, accuracy part (2026-10-07 evening)
+
+All numbers below come from the validator's own predictions (`eval_capture.py`; a CPU re-run of the official
+evaluation reproduces every reported test number exactly). Model choices on validation only; test scored once.
+
+**Corrected 4-class validation baseline.** The 8-class YOLO11s scored on the 4 kept classes gives 73.8 val mAP50
+through the official evaluator (batch 16); the 72.5 in section 14 came from the training log's own validation
+(batch 64). Test is unchanged at 69.6. Use 73.8.
+
+**Paired tests, 4-class models (`stats_4cls.py`, board bootstrap B=1000, exact Wilcoxon on per-board AP50):**
+val sqrt-plain +2.5 [-0.1, +4.9] p 0.75; val sqrt-base +1.8 [-0.9, +4.5]; test sqrt-plain -2.6 [-4.6, +0.3] p 0.57;
+test sqrt-base -0.4 [-2.8, +1.9]; test plain-base +2.2 [-1.4, +4.4]. No difference is significant.
+(The earlier `bootstrap_ci.py` re-predicted image by image and was 2-3 points off the official numbers: superseded.)
+
+**Weighted Boxes Fusion of YOLO11m + YOLO11s, 8 classes (`math_model.py --tag 8cls_m_s`).** Grid on val:
+fusion IoU {0.45, 0.55, 0.65} x weights {1:1, 2:1, 1:2}; chosen IoU 0.65, weights 1:1 (val 69.4 / 39.0 vs singles
+66.1 / 66.3 mAP50). Test: fused 65.7 mAP50 / 36.1 mAP50-95; YOLO11m 63.0 / 34.1; YOLO11s 64.6 / 33.7 (singles re-matched
+in original pixels, within 0.3 of the official). Fused minus YOLO11s (best single on val): mAP50 +1.1 [-0.5, +2.7],
+**mAP50-95 +2.4 [+1.6, +3.2]** (significant), 7 boards better / 5 worse, Wilcoxon p 0.52 on AP50.
+Note: the chosen IoU is the top of the grid; the grid was fixed before running and is not widened after the test.
+
+**Per-class thresholds (F1-optimal per class on val) vs one global threshold (0.26 on val):** test macro-F1 fused
+66.2 vs 66.9 global; YOLO11s 64.9 vs 66.8. Per-class thresholds over-fit the rare classes' few val boxes:
+NOT adopted; the application keeps one global threshold.
+
+**Pre-registered for the 4-class final model (fixed before the 1280 results are read):** after section 16's rule
+picks the best single model, run `math_model.py` on all four 4-class models (plain/sqrt x 1024/1280) with the same
+grid (IoU {0.45, 0.55, 0.65}; equal weights or one model doubled). The deployed detector is the fused one if its val
+mAP50 exceeds the best single model's val mAP50, otherwise the best single model. The deployed detector is tested once.
+
+## 18. HANDOVER / resume point (paused 2026-10-07 ~21:45 IST at the user's request)
+
+Running when paused (no action needed to keep them going):
+- Kaggle `prakyats/yolo11s-wood-4cls-1280` (sqrt@1280 + plain@1280, val selection + test once), expected done ~22:45 IST.
+- Local CPU: `enhance_study.py --weights weights/yolo11s_4cls_balanced.pt --imgsz 1024` (~85 min) -> eval/enhancement/.
+
+Done today (all uncommitted): build_balanced.py, bootstrap_ci.py (superseded), eval_capture.py, stats_4cls.py,
+math_model.py (WBF 8-class done: test 65.7/36.1, +2.4 mAP50-95 sig.), bri.py + bri_validate.py (kappa 0.86 test),
+train_wiou.py + --seed flag (Kaggle scripts v5 uploaded), enhance_study.py, app.py (4-class model, BRI grade,
+value estimate, per-model imgsz), docs/make_final_diagrams.py, docs/deck_tools.py (tested), docs/collect_results.py.
+Guide doc: Major_Project/docs/BRI_Model_Update_for_Guide_2026-10-07.docx.
+
+Next, in order:
+1. Download 1280 outputs: `python -m kaggle kernels output prakyats/yolo11s-wood-4cls-1280 -p weights_local/kaggle_1280_v1`;
+   copy into runs_log/run5_* , eval/yolo11s_4cls_{sqrt,plain}_1280/, runs_log/run5_4cls_1280_v1/selection.json.
+2. Apply section 16 rule -> final single model; capture 1280 models (eval_capture), run section 17 4-class fusion rule.
+3. Write docs/final_model.json; push WIoU+seeds notebook: `python <scratch>/make_nb_wiou.py <variant> <imgsz> <val_map50>`
+   (generator in session scratchpad; recreate from section 17 description if lost), kaggle kernels push.
+4. bri_validate.py with the final detector; enhancement study rerun if final model differs (optional).
+5. collect_results.py -> write docs/build_final_deck.py (plan: 33 slides, V3.0 + new MM-I/II/III, stats, grading,
+   enhancement, conclusion, refs [12]-[22]) -> Major_Project/docs/Major_Project_Final_Presentation_V4.0.pptx.
+6. App screenshots with final model; update Results tab; commit (as prakyats, no co-author trailer).
+Open questions for the user: final review date/time; ma'am's severity ranking.
+
+## 19. Results 2026-10-08 (resumed)
+
+**1280 rect (Kaggle `yolo11s-wood-4cls-1280` v1, finished 22:01 IST, identical build to v1 confirmed).**
+sqrt@1280: 2.10 h, val 74.6 / 35.5, test 71.6 / 34.3 (Crack 54.5, Resin 67.6).
+plain@1280: 2.17 h, val 71.5 / 33.9, test 67.5 / 30.7.
+Section 16 rule (highest val mAP50): **final single model = sqrt@1024 (val 75.3)**. sqrt@1280 scored higher on test
+(71.6 vs 69.2) but test is not used for selection; report it as an observation only. Test evaluations total: 6.
+
+**Enhancement study, val, sqrt@1024 (`enhance_study.py`, eval/enhancement/).** mAP50, raw / CLAHE / denoise / sharpen:
+normal 74.8 / 65.8 / 75.3 / 73.8; low light 50.0 / 27.7 / 48.0 / 49.3; overexposed 58.2 / 47.9 / 58.2 / 57.7;
+blur 73.3 / 62.2 / 72.9 / 75.1; noise 67.8 / 56.5 / 73.0 / 57.0; low contrast 61.3 / 62.6 / 61.6 / 62.6.
+CLAHE significantly worse in 5 of 6 conditions (CI excludes 0, Wilcoxon p <= 0.006). Denoise significantly better
+only on noisy input (+3.2 to +7.2, p 0.006). Sharpen: blur +, n.s. => H1 (enhancement improves detection) rejected for
+raw images; denoising recommended only for noisy cameras. Degradations cost up to 25 points (low light): imaging
+conditions matter more than any enhancement.
+
+**Launched:** Kaggle `prakyats/yolo11s-wood-final-wiou-seeds` (sqrt@1024: Wise-IoU seed 42, CIoU seeds 1 and 2;
+rule in its first cell). Local: 4-class fusion per section 17 (`math_model.py --tag 4cls_fusion`).
+
+## 20. 4-class fusion (section 17 rule) -> deployed detector (2026-10-08 morning)
+
+`math_model.py --tag 4cls_fusion` on sqrt@1024, plain@1024, sqrt@1280, plain@1280. Val singles 75.6 / 73.1 / 74.7 / 71.7
+(re-matched). Grid choice on val: fusion IoU 0.55, weights 2:1:1:1 (sqrt@1024 doubled), val 78.1 / 39.2.
+78.1 > 75.6 => **fusion adopted as the deployed detector** (pre-registered rule). Tested once:
+**test fused 74.7 mAP50 / 36.7 mAP50-95** vs best-on-val single (sqrt@1024) 69.2 / 33.3:
+mAP50 diff 95% CI [+2.7, +7.1], mAP50-95 [+1.8, +4.7], 10 boards better / 2 worse, exact Wilcoxon p = 0.042.
+Per-class thresholds again worse (macro-F1 71.2 vs 73.6 global 0.20): not adopted. Test evaluations in total: 7.
+
+## 21. Status 2026-10-08 late morning
+- Deployed detector = 4-class fusion (section 20). BRI with it: test per image exact 78.3 %, within-one 96.2 %,
+  QWK 0.83, Spearman 0.86; per board 10/12 exact, QWK 0.73 (eval/bri/bri_validation_fusion4_1024.json).
+- app.py: default model "Final: fusion of four 4-class YOLO11s models (deployed)" (+ 8-class m+s fusion), BRI
+  thresholds per detector, Results tab updated. Backups of earlier app versions in weights_local/.
+- Final deck built: Major_Project/docs/Major_Project_Final_Presentation_V4.0.pptx (33 slides) by
+  `python docs/collect_results.py && python docs/build_final_deck.py --date "<date>"`.
+- Pending: Kaggle wiou+seeds -> download to weights_local/kaggle_wiou_v1, copy selection.json to
+  runs_log/run6_final_wiou_seeds_v1/, rerun collect + build. Review date for the title slide.
+
+## 22. Wise-IoU and seeds (Kaggle `yolo11s-wood-final-wiou-seeds` v1, 2026-10-08)
+Final single setup sqrt@1024: val mAP50 seed 42 / 1 / 2 = 75.3 / 74.8 / 75.6 -> run-to-run spread 0.8.
+Wise-IoU v3 (seed 42): val 74.6 / 35.7 (Crack 59.4) -> not above CIoU by more than the spread -> not adopted, no test
+evaluation (rule in the notebook's first cell). Test evaluations in total stay at 7.
+Review date: 24 October 2026, 9 am (title slide, Gantt).

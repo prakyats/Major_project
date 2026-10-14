@@ -1,0 +1,2125 @@
+{
+ "test8": {
+  "YOLO11m": {
+   "Dead_Knot": [
+    77.2,
+    88.0,
+    82.3,
+    86.8,
+    41.8
+   ],
+   "Marrow": [
+    79.6,
+    84.9,
+    82.2,
+    85.8,
+    57.4
+   ],
+   "Live_Knot": [
+    73.5,
+    79.2,
+    76.3,
+    74.8,
+    32.0
+   ],
+   "Knot_missing": [
+    57.9,
+    62.5,
+    60.1,
+    62.7,
+    35.7
+   ],
+   "Knot_with_crack": [
+    63.2,
+    63.3,
+    63.3,
+    61.7,
+    38.4
+   ],
+   "Resin": [
+    68.0,
+    56.5,
+    61.7,
+    59.5,
+    29.9
+   ],
+   "Crack": [
+    56.8,
+    72.6,
+    63.7,
+    57.7,
+    31.0
+   ],
+   "Quartzity": [
+    30.7,
+    22.3,
+    25.8,
+    15.4,
+    5.7
+   ],
+   "ALL": [
+    63.4,
+    66.2,
+    64.7,
+    63.0,
+    34.0
+   ]
+  },
+  "YOLO11s": {
+   "Dead_Knot": [
+    83.0,
+    84.3,
+    83.6,
+    89.1,
+    43.3
+   ],
+   "Marrow": [
+    89.3,
+    72.7,
+    80.2,
+    87.7,
+    55.2
+   ],
+   "Live_Knot": [
+    75.2,
+    75.1,
+    75.2,
+    75.8,
+    32.6
+   ],
+   "Knot_missing": [
+    80.8,
+    70.8,
+    75.5,
+    69.6,
+    34.1
+   ],
+   "Knot_with_crack": [
+    80.9,
+    63.3,
+    71.1,
+    67.5,
+    42.8
+   ],
+   "Resin": [
+    81.9,
+    53.6,
+    64.8,
+    60.4,
+    29.5
+   ],
+   "Crack": [
+    60.5,
+    63.2,
+    61.8,
+    53.0,
+    26.3
+   ],
+   "Quartzity": [
+    16.7,
+    30.0,
+    21.5,
+    13.4,
+    3.0
+   ],
+   "ALL": [
+    71.0,
+    64.1,
+    67.4,
+    64.6,
+    33.4
+   ]
+  }
+ },
+ "fusion8": {
+  "models": [
+   "weights/yolo11m_final.pt",
+   "weights/yolo11s_baseline.pt"
+  ],
+  "imgsz": [
+   1024,
+   1024
+  ],
+  "names": [
+   "Quartzity",
+   "Live_Knot",
+   "Marrow",
+   "Resin",
+   "Dead_Knot",
+   "Knot_with_crack",
+   "Knot_missing",
+   "Crack"
+  ],
+  "fusion_grid_val": [
+   {
+    "t_iou": 0.45,
+    "weights": [
+     1,
+     1
+    ],
+    "val_map50": 0.6759983777269722,
+    "val_map": 0.3767648520557574
+   },
+   {
+    "t_iou": 0.45,
+    "weights": [
+     2,
+     1
+    ],
+    "val_map50": 0.6775608360058145,
+    "val_map": 0.3770214706434539
+   },
+   {
+    "t_iou": 0.45,
+    "weights": [
+     1,
+     2
+    ],
+    "val_map50": 0.6802647200147751,
+    "val_map": 0.37593782674805865
+   },
+   {
+    "t_iou": 0.55,
+    "weights": [
+     1,
+     1
+    ],
+    "val_map50": 0.6797177055217725,
+    "val_map": 0.38060278154082
+   },
+   {
+    "t_iou": 0.55,
+    "weights": [
+     2,
+     1
+    ],
+    "val_map50": 0.6809365783549686,
+    "val_map": 0.37892147181089536
+   },
+   {
+    "t_iou": 0.55,
+    "weights": [
+     1,
+     2
+    ],
+    "val_map50": 0.6829192275119846,
+    "val_map": 0.3811415311741737
+   },
+   {
+    "t_iou": 0.65,
+    "weights": [
+     1,
+     1
+    ],
+    "val_map50": 0.6940131298450135,
+    "val_map": 0.390275655439417
+   },
+   {
+    "t_iou": 0.65,
+    "weights": [
+     2,
+     1
+    ],
+    "val_map50": 0.6938767784778506,
+    "val_map": 0.3878784307877041
+   },
+   {
+    "t_iou": 0.65,
+    "weights": [
+     1,
+     2
+    ],
+    "val_map50": 0.6918487320578217,
+    "val_map": 0.38586900013810965
+   }
+  ],
+  "chosen": {
+   "t_iou": 0.65,
+   "weights": [
+    1,
+    1
+   ],
+   "val_map50": 0.6940131298450135,
+   "val_map": 0.390275655439417
+  },
+  "val_single_map50": [
+   0.6607991174529217,
+   0.6634555749073066
+  ],
+  "best_single_on_val": "weights/yolo11s_baseline.pt",
+  "test": {
+   "fused": {
+    "map50": 0.6574235610939472,
+    "map": 0.36062383170679535,
+    "ap50": {
+     "Quartzity": 0.12420581856993296,
+     "Live_Knot": 0.7793949973546771,
+     "Marrow": 0.898947281183933,
+     "Resin": 0.6411819885424395,
+     "Dead_Knot": 0.8947726110834281,
+     "Knot_with_crack": 0.6752895685826323,
+     "Knot_missing": 0.669189723320158,
+     "Crack": 0.5764065001143769
+    }
+   },
+   "singles": {
+    "weights/yolo11m_final.pt": {
+     "map50": 0.630423644181676,
+     "map": 0.3412939360373315,
+     "ap50": {
+      "Quartzity": 0.15370192307692307,
+      "Live_Knot": 0.7484081429532785,
+      "Marrow": 0.8575575065605875,
+      "Resin": 0.5948069333019061,
+      "Dead_Knot": 0.8680526448945008,
+      "Knot_with_crack": 0.6173995483659007,
+      "Knot_missing": 0.6265584415584415,
+      "Crack": 0.5769040127418698
+     }
+    },
+    "weights/yolo11s_baseline.pt": {
+     "map50": 0.6459522207058139,
+     "map": 0.3367210310036315,
+     "ap50": {
+      "Quartzity": 0.13434282584884993,
+      "Live_Knot": 0.7600479388987934,
+      "Marrow": 0.8772166828692054,
+      "Resin": 0.6035417197746759,
+      "Dead_Knot": 0.8911016000047678,
+      "Knot_with_crack": 0.6747825337511368,
+      "Knot_missing": 0.696341307814992,
+      "Crack": 0.53024315668409
+     }
+    }
+   },
+   "official_singles": {
+    "weights/yolo11m_final.pt": {
+     "map50": 0.6304255600505702,
+     "map": 0.33981739030686803
+    },
+    "weights/yolo11s_baseline.pt": {
+     "map50": 0.6457383245223761,
+     "map": 0.33366723828698003
+    }
+   }
+  },
+  "thresholds": {
+   "per_class": {
+    "Quartzity": 0.1,
+    "Live_Knot": 0.27,
+    "Marrow": 0.23,
+    "Resin": 0.35,
+    "Dead_Knot": 0.37,
+    "Knot_with_crack": 0.3,
+    "Knot_missing": 0.23,
+    "Crack": 0.22
+   },
+   "global_": 0.26,
+   "fused_test_global": {
+    "P": 0.6833090804440294,
+    "R": 0.6616126099525041,
+    "F1": 0.6688086209471513,
+    "per_class": {
+     "0": [
+      18.2,
+      20.0,
+      19.0
+     ],
+     "1": [
+      73.6,
+      76.8,
+      75.2
+     ],
+     "2": [
+      84.4,
+      82.6,
+      83.5
+     ],
+     "3": [
+      81.2,
+      56.5,
+      66.7
+     ],
+     "4": [
+      80.2,
+      87.2,
+      83.5
+     ],
+     "5": [
+      77.8,
+      70.0,
+      73.7
+     ],
+     "6": [
+      69.6,
+      66.7,
+      68.1
+     ],
+     "7": [
+      61.7,
+      69.5,
+      65.3
+     ]
+    }
+   },
+   "fused_test_per_class": {
+    "P": 0.6822334211788539,
+    "R": 0.6735787775898762,
+    "F1": 0.6623117023118144,
+    "per_class": {
+     "0": [
+      12.9,
+      40.0,
+      19.5
+     ],
+     "1": [
+      75.0,
+      76.8,
+      75.9
+     ],
+     "2": [
+      79.2,
+      82.6,
+      80.9
+     ],
+     "3": [
+      88.1,
+      53.6,
+      66.7
+     ],
+     "4": [
+      86.2,
+      81.9,
+      84.0
+     ],
+     "5": [
+      80.0,
+      66.7,
+      72.7
+     ],
+     "6": [
+      66.7,
+      66.7,
+      66.7
+     ],
+     "7": [
+      57.8,
+      70.5,
+      63.5
+     ]
+    }
+   },
+   "single_thresholds": {
+    "Quartzity": 0.22,
+    "Live_Knot": 0.3,
+    "Marrow": 0.3,
+    "Resin": 0.34,
+    "Dead_Knot": 0.38,
+    "Knot_with_crack": 0.23,
+    "Knot_missing": 0.47,
+    "Crack": 0.33
+   },
+   "single_global": 0.31,
+   "single_test_global": {
+    "P": 0.7117016978024038,
+    "R": 0.6434729454648922,
+    "F1": 0.6684385936948107,
+    "per_class": {
+     "0": [
+      16.7,
+      30.0,
+      21.4
+     ],
+     "1": [
+      74.8,
+      75.4,
+      75.1
+     ],
+     "2": [
+      89.5,
+      73.9,
+      81.0
+     ],
+     "3": [
+      82.2,
+      53.6,
+      64.9
+     ],
+     "4": [
+      82.6,
+      84.5,
+      83.6
+     ],
+     "5": [
+      82.6,
+      63.3,
+      71.7
+     ],
+     "6": [
+      81.0,
+      70.8,
+      75.6
+     ],
+     "7": [
+      60.0,
+      63.2,
+      61.5
+     ]
+    }
+   },
+   "single_test_per_class": {
+    "P": 0.7100106362947272,
+    "R": 0.6181073483800528,
+    "F1": 0.6490764553317048,
+    "per_class": {
+     "0": [
+      12.5,
+      30.0,
+      17.6
+     ],
+     "1": [
+      74.5,
+      76.1,
+      75.3
+     ],
+     "2": [
+      89.5,
+      73.9,
+      81.0
+     ],
+     "3": [
+      81.8,
+      52.2,
+      63.7
+     ],
+     "4": [
+      84.6,
+      81.6,
+      83.1
+     ],
+     "5": [
+      76.0,
+      63.3,
+      69.1
+     ],
+     "6": [
+      86.7,
+      54.2,
+      66.7
+     ],
+     "7": [
+      62.5,
+      63.2,
+      62.8
+     ]
+    }
+   }
+  },
+  "stats_fused_minus_best_single": {
+   "boards": 12,
+   "map50_diff_ci": [
+    -0.5,
+    2.7
+   ],
+   "map_diff_ci": [
+    1.6,
+    3.2
+   ],
+   "share_not_better": 0.087,
+   "boards_better": 7,
+   "boards_worse": 5,
+   "wilcoxon_p": 0.5185546875,
+   "wilcoxon_n": 12
+  }
+ },
+ "val4": {
+  "plain_1024": {
+   "Dead_Knot": [
+    76.9,
+    78.9,
+    77.9,
+    82.0,
+    43.0
+   ],
+   "Live_Knot": [
+    78.0,
+    76.3,
+    77.1,
+    80.3,
+    33.4
+   ],
+   "Resin": [
+    77.7,
+    72.7,
+    75.1,
+    75.6,
+    39.8
+   ],
+   "Crack": [
+    59.4,
+    64.5,
+    61.8,
+    54.4,
+    25.3
+   ],
+   "ALL": [
+    73.0,
+    73.1,
+    73.1,
+    73.1,
+    35.4
+   ]
+  },
+  "full_1024": {
+   "Dead_Knot": [
+    80.2,
+    75.7,
+    77.9,
+    83.1,
+    42.4
+   ],
+   "Live_Knot": [
+    80.0,
+    76.3,
+    78.1,
+    78.8,
+    33.3
+   ],
+   "Resin": [
+    76.3,
+    67.0,
+    71.4,
+    70.4,
+    39.7
+   ],
+   "Crack": [
+    56.1,
+    58.8,
+    57.4,
+    55.4,
+    28.5
+   ],
+   "ALL": [
+    73.2,
+    69.5,
+    71.3,
+    71.9,
+    36.0
+   ]
+  },
+  "sqrt_1024": {
+   "Dead_Knot": [
+    79.9,
+    74.9,
+    77.3,
+    81.4,
+    41.9
+   ],
+   "Live_Knot": [
+    78.9,
+    76.3,
+    77.6,
+    79.9,
+    34.4
+   ],
+   "Resin": [
+    75.7,
+    71.0,
+    73.3,
+    79.5,
+    39.0
+   ],
+   "Crack": [
+    64.2,
+    57.7,
+    60.7,
+    60.5,
+    29.0
+   ],
+   "ALL": [
+    74.7,
+    69.9,
+    72.2,
+    75.3,
+    36.0
+   ]
+  },
+  "sqrt_1280": {
+   "Dead_Knot": [
+    76.2,
+    79.6,
+    77.9,
+    82.7,
+    41.8
+   ],
+   "Live_Knot": [
+    78.5,
+    72.7,
+    75.5,
+    78.8,
+    34.7
+   ],
+   "Resin": [
+    70.1,
+    75.0,
+    72.5,
+    78.2,
+    38.6
+   ],
+   "Crack": [
+    56.5,
+    64.0,
+    60.0,
+    58.5,
+    26.9
+   ],
+   "ALL": [
+    70.3,
+    72.8,
+    71.6,
+    74.6,
+    35.5
+   ]
+  },
+  "plain_1280": {
+   "Dead_Knot": [
+    72.8,
+    80.9,
+    76.6,
+    81.7,
+    41.0
+   ],
+   "Live_Knot": [
+    79.3,
+    73.2,
+    76.1,
+    78.6,
+    32.9
+   ],
+   "Resin": [
+    78.2,
+    69.3,
+    73.5,
+    74.2,
+    38.0
+   ],
+   "Crack": [
+    54.7,
+    53.2,
+    53.9,
+    51.4,
+    23.9
+   ],
+   "ALL": [
+    71.3,
+    69.1,
+    70.2,
+    71.5,
+    33.9
+   ]
+  }
+ },
+ "test4": {
+  "plain_1024": {
+   "Dead_Knot": [
+    82.0,
+    84.8,
+    83.4,
+    89.4,
+    44.1
+   ],
+   "Live_Knot": [
+    73.6,
+    71.2,
+    72.4,
+    74.5,
+    32.0
+   ],
+   "Resin": [
+    88.3,
+    54.5,
+    67.4,
+    63.7,
+    31.2
+   ],
+   "Crack": [
+    62.8,
+    69.5,
+    65.9,
+    59.2,
+    26.5
+   ],
+   "ALL": [
+    76.7,
+    70.0,
+    73.2,
+    71.7,
+    33.4
+   ]
+  },
+  "full_1024": null,
+  "sqrt_1024": {
+   "Dead_Knot": [
+    83.7,
+    82.5,
+    83.1,
+    87.5,
+    43.3
+   ],
+   "Live_Knot": [
+    74.2,
+    77.3,
+    75.7,
+    76.4,
+    32.8
+   ],
+   "Resin": [
+    84.7,
+    58.0,
+    68.8,
+    64.2,
+    32.1
+   ],
+   "Crack": [
+    56.5,
+    60.0,
+    58.2,
+    48.7,
+    24.1
+   ],
+   "ALL": [
+    74.8,
+    69.4,
+    72.0,
+    69.2,
+    33.1
+   ]
+  },
+  "sqrt_1280": {
+   "Dead_Knot": [
+    83.7,
+    83.6,
+    83.7,
+    89.9,
+    43.6
+   ],
+   "Live_Knot": [
+    77.0,
+    68.0,
+    72.2,
+    74.4,
+    32.6
+   ],
+   "Resin": [
+    91.5,
+    58.0,
+    71.0,
+    67.6,
+    32.8
+   ],
+   "Crack": [
+    59.7,
+    62.1,
+    60.9,
+    54.5,
+    28.1
+   ],
+   "ALL": [
+    78.0,
+    67.9,
+    72.6,
+    71.6,
+    34.3
+   ]
+  },
+  "plain_1280": {
+   "Dead_Knot": [
+    77.0,
+    87.5,
+    81.9,
+    87.0,
+    40.9
+   ],
+   "Live_Knot": [
+    72.0,
+    75.1,
+    73.5,
+    75.5,
+    32.1
+   ],
+   "Resin": [
+    81.4,
+    50.8,
+    62.6,
+    60.6,
+    27.8
+   ],
+   "Crack": [
+    50.3,
+    60.0,
+    54.7,
+    47.0,
+    21.8
+   ],
+   "ALL": [
+    70.2,
+    68.4,
+    69.3,
+    67.5,
+    30.7
+   ]
+  }
+ },
+ "runs4": {
+  "plain_1024": {
+   "epochs": 91,
+   "best_epoch": 51
+  },
+  "full_1024": {
+   "epochs": 97,
+   "best_epoch": 46
+  },
+  "sqrt_1024": {
+   "epochs": 90,
+   "best_epoch": 50
+  },
+  "sqrt_1280": {
+   "epochs": 93,
+   "best_epoch": 53
+  },
+  "plain_1280": {
+   "epochs": 100,
+   "best_epoch": 68
+  }
+ },
+ "hours4": {
+  "yolo11s_4cls_full": 2.39,
+  "yolo11s_4cls_plain": 1.43,
+  "yolo11s_4cls_sqrt": 1.58
+ },
+ "sel1280": {
+  "val_map50": {
+   "yolo11s_4cls_sqrt (1024, notebook v1)": 75.3,
+   "yolo11s_4cls_plain (1024, notebook v1)": 73.1,
+   "yolo11s_4cls_sqrt_1280": 74.6,
+   "yolo11s_4cls_plain_1280": 71.5
+  },
+  "final": "yolo11s_4cls_sqrt (1024, notebook v1)",
+  "rule": "highest 4-class val mAP50 among sqrt/plain at 1024 and 1280"
+ },
+ "hours1280": {
+  "yolo11s_4cls_sqrt_1280": 2.1,
+  "yolo11s_4cls_plain_1280": 2.17
+ },
+ "fusion4": {
+  "models": [
+   "weights/yolo11s_4cls_balanced.pt",
+   "weights/yolo11s_4cls_plain.pt",
+   "weights/yolo11s_4cls_sqrt_1280.pt",
+   "weights/yolo11s_4cls_plain_1280.pt"
+  ],
+  "imgsz": [
+   1024,
+   1024,
+   1280,
+   1280
+  ],
+  "names": [
+   "Live_Knot",
+   "Dead_Knot",
+   "Resin",
+   "Crack"
+  ],
+  "fusion_grid_val": [
+   {
+    "t_iou": 0.45,
+    "weights": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "val_map50": 0.7617287866137992,
+    "val_map": 0.38102426860450556
+   },
+   {
+    "t_iou": 0.45,
+    "weights": [
+     2,
+     1,
+     1,
+     1
+    ],
+    "val_map50": 0.7694078937709982,
+    "val_map": 0.3827514962759698
+   },
+   {
+    "t_iou": 0.45,
+    "weights": [
+     1,
+     2,
+     1,
+     1
+    ],
+    "val_map50": 0.7571710052616644,
+    "val_map": 0.3760149557739306
+   },
+   {
+    "t_iou": 0.45,
+    "weights": [
+     1,
+     1,
+     2,
+     1
+    ],
+    "val_map50": 0.7543181814187595,
+    "val_map": 0.37634934165273126
+   },
+   {
+    "t_iou": 0.45,
+    "weights": [
+     1,
+     1,
+     1,
+     2
+    ],
+    "val_map50": 0.7611285254270312,
+    "val_map": 0.3769317672875927
+   },
+   {
+    "t_iou": 0.55,
+    "weights": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "val_map50": 0.7701225718613514,
+    "val_map": 0.3868428341658619
+   },
+   {
+    "t_iou": 0.55,
+    "weights": [
+     2,
+     1,
+     1,
+     1
+    ],
+    "val_map50": 0.7814019295582174,
+    "val_map": 0.39211974824130796
+   },
+   {
+    "t_iou": 0.55,
+    "weights": [
+     1,
+     2,
+     1,
+     1
+    ],
+    "val_map50": 0.7676196997448366,
+    "val_map": 0.3850119158294839
+   },
+   {
+    "t_iou": 0.55,
+    "weights": [
+     1,
+     1,
+     2,
+     1
+    ],
+    "val_map50": 0.7692717402736285,
+    "val_map": 0.3866390168127864
+   },
+   {
+    "t_iou": 0.55,
+    "weights": [
+     1,
+     1,
+     1,
+     2
+    ],
+    "val_map50": 0.7740652067245175,
+    "val_map": 0.38448037385698497
+   },
+   {
+    "t_iou": 0.65,
+    "weights": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "val_map50": 0.7748310146397264,
+    "val_map": 0.39277522859201053
+   },
+   {
+    "t_iou": 0.65,
+    "weights": [
+     2,
+     1,
+     1,
+     1
+    ],
+    "val_map50": 0.7800934520735938,
+    "val_map": 0.39352701938128265
+   },
+   {
+    "t_iou": 0.65,
+    "weights": [
+     1,
+     2,
+     1,
+     1
+    ],
+    "val_map50": 0.7753883209124706,
+    "val_map": 0.39390579576666684
+   },
+   {
+    "t_iou": 0.65,
+    "weights": [
+     1,
+     1,
+     2,
+     1
+    ],
+    "val_map50": 0.7769409575107822,
+    "val_map": 0.39235512893882374
+   },
+   {
+    "t_iou": 0.65,
+    "weights": [
+     1,
+     1,
+     1,
+     2
+    ],
+    "val_map50": 0.7760527893969403,
+    "val_map": 0.38767217520847297
+   }
+  ],
+  "chosen": {
+   "t_iou": 0.55,
+   "weights": [
+    2,
+    1,
+    1,
+    1
+   ],
+   "val_map50": 0.7814019295582174,
+   "val_map": 0.39211974824130796
+  },
+  "val_single_map50": [
+   0.7563951419401943,
+   0.7310658998565938,
+   0.7469106654004757,
+   0.7168545529238084
+  ],
+  "best_single_on_val": "weights/yolo11s_4cls_balanced.pt",
+  "test": {
+   "fused": {
+    "map50": 0.7468570263020109,
+    "map": 0.3671655443653552,
+    "ap50": {
+     "Live_Knot": 0.7859614998281435,
+     "Dead_Knot": 0.902701483311408,
+     "Resin": 0.6972196607103838,
+     "Crack": 0.6015454613581084
+    }
+   },
+   "singles": {
+    "weights/yolo11s_4cls_balanced.pt": {
+     "map50": 0.6922600656532456,
+     "map": 0.332674647428138,
+     "ap50": {
+      "Live_Knot": 0.763662681984137,
+      "Dead_Knot": 0.8747891497300676,
+      "Resin": 0.6424714586609916,
+      "Crack": 0.4881169722377859
+     }
+    },
+    "weights/yolo11s_4cls_plain.pt": {
+     "map50": 0.7176992480731461,
+     "map": 0.33638636819359236,
+     "ap50": {
+      "Live_Knot": 0.7454262971828653,
+      "Dead_Knot": 0.8943253760454686,
+      "Resin": 0.6385678237893124,
+      "Crack": 0.5924774952749381
+     }
+    },
+    "weights/yolo11s_4cls_sqrt_1280.pt": {
+     "map50": 0.7160945209549482,
+     "map": 0.3431581123847385,
+     "ap50": {
+      "Live_Knot": 0.74384623286747,
+      "Dead_Knot": 0.8989249572693347,
+      "Resin": 0.6763490793041698,
+      "Crack": 0.5452578143788185
+     }
+    },
+    "weights/yolo11s_4cls_plain_1280.pt": {
+     "map50": 0.6796048388719051,
+     "map": 0.3092846729851423,
+     "ap50": {
+      "Live_Knot": 0.7602273101365156,
+      "Dead_Knot": 0.8699491518714654,
+      "Resin": 0.6103611485461722,
+      "Crack": 0.4778817449334678
+     }
+    }
+   },
+   "official_singles": {
+    "weights/yolo11s_4cls_balanced.pt": {
+     "map50": 0.6919511290393178,
+     "map": 0.33083864135696744
+    },
+    "weights/yolo11s_4cls_plain.pt": {
+     "map50": 0.7173235889971012,
+     "map": 0.33440672260232995
+    },
+    "weights/yolo11s_4cls_sqrt_1280.pt": {
+     "map50": 0.7159383053899468,
+     "map": 0.34269394716069684
+    },
+    "weights/yolo11s_4cls_plain_1280.pt": {
+     "map50": 0.6753734499817393,
+     "map": 0.3065820534334468
+    }
+   }
+  },
+  "thresholds": {
+   "per_class": {
+    "Live_Knot": 0.2,
+    "Dead_Knot": 0.35,
+    "Resin": 0.31,
+    "Crack": 0.19
+   },
+   "global_": 0.2,
+   "fused_test_global": {
+    "P": 0.7562611542439869,
+    "R": 0.7325064796127331,
+    "F1": 0.7357253126220886,
+    "per_class": {
+     "0": [
+      74.8,
+      79.8,
+      77.2
+     ],
+     "1": [
+      80.2,
+      87.5,
+      83.7
+     ],
+     "2": [
+      89.1,
+      59.4,
+      71.3
+     ],
+     "3": [
+      58.3,
+      66.3,
+      62.1
+     ]
+    }
+   },
+   "fused_test_per_class": {
+    "P": 0.7750141151745625,
+    "R": 0.6823416932012741,
+    "F1": 0.7122716534986157,
+    "per_class": {
+     "0": [
+      74.8,
+      79.8,
+      77.2
+     ],
+     "1": [
+      84.7,
+      76.1,
+      80.2
+     ],
+     "2": [
+      92.1,
+      50.7,
+      65.4
+     ],
+     "3": [
+      58.3,
+      66.3,
+      62.1
+     ]
+    }
+   },
+   "single_thresholds": {
+    "Live_Knot": 0.3,
+    "Dead_Knot": 0.3,
+    "Resin": 0.37,
+    "Crack": 0.22
+   },
+   "single_global": 0.35,
+   "single_test_global": {
+    "P": 0.7629678808010458,
+    "R": 0.683343509310252,
+    "F1": 0.7157887679359526,
+    "per_class": {
+     "0": [
+      75.7,
+      75.4,
+      75.6
+     ],
+     "1": [
+      84.8,
+      81.0,
+      82.9
+     ],
+     "2": [
+      87.0,
+      58.0,
+      69.6
+     ],
+     "3": [
+      57.7,
+      58.9,
+      58.3
+     ]
+    }
+   },
+   "single_test_per_class": {
+    "P": 0.7458718973401404,
+    "R": 0.7240554668959827,
+    "F1": 0.7243491349366502,
+    "per_class": {
+     "0": [
+      72.6,
+      79.6,
+      75.9
+     ],
+     "1": [
+      82.7,
+      83.7,
+      83.2
+     ],
+     "2": [
+      88.9,
+      58.0,
+      70.2
+     ],
+     "3": [
+      54.2,
+      68.4,
+      60.5
+     ]
+    }
+   }
+  },
+  "stats_fused_minus_best_single": {
+   "boards": 12,
+   "map50_diff_ci": [
+    2.7,
+    7.1
+   ],
+   "map_diff_ci": [
+    1.8,
+    4.7
+   ],
+   "share_not_better": 0.0,
+   "boards_better": 10,
+   "boards_worse": 2,
+   "wilcoxon_p": 0.04248046875,
+   "wilcoxon_n": 12
+  }
+ },
+ "stats4": {
+  "val": {
+   "map50": {
+    "base": 73.8,
+    "plain": 73.1,
+    "sqrt": 75.6
+   },
+   "map": {
+    "base": 35.5,
+    "plain": 35.6,
+    "sqrt": 36.4
+   },
+   "tests": {
+    "sqrt - plain": {
+     "boards": 17,
+     "map50_diff_ci": [
+      -0.1,
+      4.9
+     ],
+     "map_diff_ci": [
+      -0.5,
+      2.6
+     ],
+     "share_not_better": 0.03,
+     "boards_better": 9,
+     "boards_worse": 8,
+     "wilcoxon_p": 0.7466583251953125,
+     "wilcoxon_n": 17
+    },
+    "sqrt - base": {
+     "boards": 17,
+     "map50_diff_ci": [
+      -0.9,
+      4.5
+     ],
+     "map_diff_ci": [
+      -0.6,
+      2.4
+     ],
+     "share_not_better": 0.083,
+     "boards_better": 8,
+     "boards_worse": 9,
+     "wilcoxon_p": 0.54766845703125,
+     "wilcoxon_n": 17
+    },
+    "plain - base": {
+     "boards": 17,
+     "map50_diff_ci": [
+      -2.4,
+      1.2
+     ],
+     "map_diff_ci": [
+      -2.1,
+      1.9
+     ],
+     "share_not_better": 0.729,
+     "boards_better": 7,
+     "boards_worse": 10,
+     "wilcoxon_p": 0.2246856689453125,
+     "wilcoxon_n": 17
+    }
+   }
+  },
+  "test": {
+   "map50": {
+    "base": 69.6,
+    "plain": 71.8,
+    "sqrt": 69.2
+   },
+   "map": {
+    "base": 33.3,
+    "plain": 33.6,
+    "sqrt": 33.3
+   },
+   "tests": {
+    "sqrt - plain": {
+     "boards": 12,
+     "map50_diff_ci": [
+      -4.6,
+      0.3
+     ],
+     "map_diff_ci": [
+      -1.7,
+      1.9
+     ],
+     "share_not_better": 0.96,
+     "boards_better": 4,
+     "boards_worse": 8,
+     "wilcoxon_p": 0.5693359375,
+     "wilcoxon_n": 12
+    },
+    "sqrt - base": {
+     "boards": 12,
+     "map50_diff_ci": [
+      -2.8,
+      1.9
+     ],
+     "map_diff_ci": [
+      -2.0,
+      2.2
+     ],
+     "share_not_better": 0.608,
+     "boards_better": 5,
+     "boards_worse": 7,
+     "wilcoxon_p": 0.7333984375,
+     "wilcoxon_n": 12
+    },
+    "plain - base": {
+     "boards": 12,
+     "map50_diff_ci": [
+      -1.4,
+      4.4
+     ],
+     "map_diff_ci": [
+      -2.3,
+      2.2
+     ],
+     "share_not_better": 0.135,
+     "boards_better": 6,
+     "boards_worse": 6,
+     "wilcoxon_p": 0.6220703125,
+     "wilcoxon_n": 12
+    }
+   }
+  }
+ },
+ "final": {
+  "key": "fusion4",
+  "single_key": "sqrt_1024",
+  "name": "fusion (WBF) of four 4-class YOLO11s models",
+  "bri_tag": "fusion4_1024",
+  "enh_tag": "yolo11s_4cls_balanced_1024",
+  "rule": "NOTES.md sections 16, 17, 20"
+ },
+ "bri": {
+  "weights": "weights/fusion4.pt",
+  "imgsz": 1024,
+  "conf": 0.25,
+  "severity": {
+   "Live_Knot": 0.4,
+   "Dead_Knot": 0.6,
+   "Resin": 0.3,
+   "Crack": 1.0
+  },
+  "lam": 250.0,
+  "tau_reference": [
+   0.0020117845386266706,
+   0.0062339647673070415,
+   0.017864596098661437
+  ],
+  "tau_detector": [
+   0.001000539018736723,
+   0.0027498184749856595,
+   0.010356948008904094
+  ],
+  "val_qwk_after_fit": 0.7440519105984138,
+  "val_reference_grade_share": {
+   "A": 0.4005602240896359,
+   "B": 0.29971988795518206,
+   "C": 0.19887955182072828,
+   "Reject": 0.10084033613445378
+  },
+  "test_per_image": {
+   "n": 469,
+   "exact": 0.7825159914712153,
+   "within_one": 0.9616204690831557,
+   "qwk": 0.8325411573192456,
+   "spearman": 0.8555403393339918,
+   "mae_recoverable_pct": 0.4745874545293183,
+   "confusion": [
+    [
+     153,
+     19,
+     3,
+     0
+    ],
+    [
+     13,
+     77,
+     22,
+     1
+    ],
+    [
+     6,
+     5,
+     85,
+     13
+    ],
+    [
+     6,
+     2,
+     12,
+     52
+    ]
+   ]
+  },
+  "test_per_board": {
+   "n": 12,
+   "exact": 0.8333333333333334,
+   "within_one": 1.0,
+   "qwk": 0.7333333333333334,
+   "spearman": 0.7902097902097903,
+   "mae_recoverable_pct": 0.5030566388144767,
+   "confusion": [
+    [
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     2,
+     2,
+     0
+    ],
+    [
+     0,
+     0,
+     7,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     1
+    ]
+   ]
+  },
+  "test_boards": {
+   "1002": {
+    "images": 14,
+    "dis_gt": 0.007144647625474525,
+    "dis_pred": 0.004703177717081937
+   },
+   "1004": {
+    "images": 68,
+    "dis_gt": 0.010360123198445174,
+    "dis_pred": 0.0051700585035552435
+   },
+   "1037": {
+    "images": 34,
+    "dis_gt": 0.010073522764929187,
+    "dis_pred": 0.004122328864040729
+   },
+   "1047": {
+    "images": 50,
+    "dis_gt": 0.005463980494532734,
+    "dis_pred": 0.0022930906323017555
+   },
+   "1048": {
+    "images": 29,
+    "dis_gt": 0.01152141095974065,
+    "dis_pred": 0.003970795497699673
+   },
+   "1102": {
+    "images": 18,
+    "dis_gt": 0.0045983562756898915,
+    "dis_pred": 0.0016597474120014037
+   },
+   "1107": {
+    "images": 53,
+    "dis_gt": 0.0052629982602874804,
+    "dis_pred": 0.0035310043269144546
+   },
+   "1117": {
+    "images": 34,
+    "dis_gt": 0.015055492167662391,
+    "dis_pred": 0.005540974090656485
+   },
+   "1134": {
+    "images": 55,
+    "dis_gt": 0.0037999139918776397,
+    "dis_pred": 0.0030591056028656154
+   },
+   "1145": {
+    "images": 20,
+    "dis_gt": 0.027824797516223042,
+    "dis_pred": 0.012234118027117801
+   },
+   "1151": {
+    "images": 41,
+    "dis_gt": 0.006252993707454241,
+    "dis_pred": 0.0028542469162635914
+   },
+   "9990": {
+    "images": 53,
+    "dis_gt": 0.00914977984568807,
+    "dis_pred": 0.007002572559769142
+   }
+  }
+ },
+ "enh": {
+  "weights": "weights/yolo11s_4cls_balanced.pt",
+  "imgsz": 1024,
+  "split": "val",
+  "table": {
+   "normal": {
+    "raw": {
+     "map50": 0.7483906106766465,
+     "map": 0.3594061584328386
+    },
+    "clahe": {
+     "map50": 0.657825682434987,
+     "map": 0.2988279715946965
+    },
+    "denoise": {
+     "map50": 0.7525459605921898,
+     "map": 0.35927122851294235
+    },
+    "sharpen": {
+     "map50": 0.7378399360986276,
+     "map": 0.3454762068576926
+    }
+   },
+   "low_light": {
+    "raw": {
+     "map50": 0.5000016516761955,
+     "map": 0.21544567525647595
+    },
+    "clahe": {
+     "map50": 0.2770081757715344,
+     "map": 0.1061983032049179
+    },
+    "denoise": {
+     "map50": 0.4800005454025835,
+     "map": 0.2129225770688845
+    },
+    "sharpen": {
+     "map50": 0.49256953671561754,
+     "map": 0.2103812863145896
+    }
+   },
+   "overexposed": {
+    "raw": {
+     "map50": 0.582205655789791,
+     "map": 0.2597441526762168
+    },
+    "clahe": {
+     "map50": 0.47916533173480697,
+     "map": 0.21180259786762107
+    },
+    "denoise": {
+     "map50": 0.5817536880030698,
+     "map": 0.2564204401090961
+    },
+    "sharpen": {
+     "map50": 0.5773709549261482,
+     "map": 0.25714581642507517
+    }
+   },
+   "blur": {
+    "raw": {
+     "map50": 0.732941884688397,
+     "map": 0.35406108754328497
+    },
+    "clahe": {
+     "map50": 0.6220997137856619,
+     "map": 0.2776921435118188
+    },
+    "denoise": {
+     "map50": 0.7288083967022462,
+     "map": 0.3510293134470047
+    },
+    "sharpen": {
+     "map50": 0.7506882281626174,
+     "map": 0.3602432646054142
+    }
+   },
+   "noise": {
+    "raw": {
+     "map50": 0.6783141257019029,
+     "map": 0.31200499945692134
+    },
+    "clahe": {
+     "map50": 0.5647040005613093,
+     "map": 0.2515377608406456
+    },
+    "denoise": {
+     "map50": 0.7303037191996883,
+     "map": 0.34813433005175937
+    },
+    "sharpen": {
+     "map50": 0.5704797361860615,
+     "map": 0.24303780161121447
+    }
+   },
+   "low_contrast": {
+    "raw": {
+     "map50": 0.6125370799793253,
+     "map": 0.28656160862624946
+    },
+    "clahe": {
+     "map50": 0.6263932460914834,
+     "map": 0.2732328271212345
+    },
+    "denoise": {
+     "map50": 0.6155183963473907,
+     "map": 0.2896963528922279
+    },
+    "sharpen": {
+     "map50": 0.6258401055667252,
+     "map": 0.2877448790239244
+    }
+   }
+  },
+  "tests": {
+   "normal: clahe - raw": {
+    "boards": 17,
+    "map50_diff_ci": [
+     -11.2,
+     -6.5
+    ],
+    "map_diff_ci": [
+     -7.6,
+     -4.5
+    ],
+    "share_not_better": 1.0,
+    "boards_better": 3,
+    "boards_worse": 14,
+    "wilcoxon_p": 0.0055694580078125,
+    "wilcoxon_n": 17
+   },
+   "normal: denoise - raw": {
+    "boards": 17,
+    "map50_diff_ci": [
+     -1.0,
+     1.7
+    ],
+    "map_diff_ci": [
+     -0.6,
+     0.8
+    ],
+    "share_not_better": 0.293,
+    "boards_better": 10,
+    "boards_worse": 7,
+    "wilcoxon_p": 0.079681396484375,
+    "wilcoxon_n": 17
+   },
+   "normal: sharpen - raw": {
+    "boards": 17,
+    "map50_diff_ci": [
+     -3.5,
+     0.3
+    ],
+    "map_diff_ci": [
+     -2.3,
+     -0.7
+    ],
+    "share_not_better": 0.916,
+    "boards_better": 4,
+    "boards_worse": 12,
+    "wilcoxon_p": 0.083251953125,
+    "wilcoxon_n": 16
+   },
+   "low_light: clahe - raw": {
+    "boards": 17,
+    "map50_diff_ci": [
+     -27.8,
+     -16.9
+    ],
+    "map_diff_ci": [
+     -14.4,
+     -7.9
+    ],
+    "share_not_better": 1.0,
+    "boards_better": 0,
+    "boards_worse": 17,
+    "wilcoxon_p": 1.52587890625e-05,
+    "wilcoxon_n": 17
+   },
+   "low_light: denoise - raw": {
+    "boards": 17,
+    "map50_diff_ci": [
+     -3.0,
+     -1.1
+    ],
+    "map_diff_ci": [
+     -1.1,
+     0.3
+    ],
+    "share_not_better": 1.0,
+    "boards_better": 3,
+    "boards_worse": 14,
+    "wilcoxon_p": 0.0395355224609375,
+    "wilcoxon_n": 17
+   },
+   "low_light: sharpen - raw": {
+    "boards": 17,
+    "map50_diff_ci": [
+     -2.6,
+     0.2
+    ],
+    "map_diff_ci": [
+     -1.3,
+     -0.1
+    ],
+    "share_not_better": 0.935,
+    "boards_better": 4,
+    "boards_worse": 13,
+    "wilcoxon_p": 0.00665283203125,
+    "wilcoxon_n": 17
+   },
+   "overexposed: clahe - raw": {
+    "boards": 17,
+    "map50_diff_ci": [
+     -13.8,
+     -8.1
+    ],
+    "map_diff_ci": [
+     -7.7,
+     -2.8
+    ],
+    "share_not_better": 1.0,
+    "boards_better": 2,
+    "boards_worse": 15,
+    "wilcoxon_p": 0.0055694580078125,
+    "wilcoxon_n": 17
+   },
+   "overexposed: denoise - raw": {
+    "boards": 17,
+    "map50_diff_ci": [
+     -1.2,
+     1.0
+    ],
+    "map_diff_ci": [
+     -1.0,
+     0.3
+    ],
+    "share_not_better": 0.643,
+    "boards_better": 6,
+    "boards_worse": 11,
+    "wilcoxon_p": 0.7819061279296875,
+    "wilcoxon_n": 17
+   },
+   "overexposed: sharpen - raw": {
+    "boards": 17,
+    "map50_diff_ci": [
+     -1.7,
+     0.5
+    ],
+    "map_diff_ci": [
+     -1.0,
+     0.3
+    ],
+    "share_not_better": 0.87,
+    "boards_better": 3,
+    "boards_worse": 14,
+    "wilcoxon_p": 0.079681396484375,
+    "wilcoxon_n": 17
+   },
+   "blur: clahe - raw": {
+    "boards": 17,
+    "map50_diff_ci": [
+     -13.6,
+     -7.8
+    ],
+    "map_diff_ci": [
+     -10.2,
+     -5.2
+    ],
+    "share_not_better": 1.0,
+    "boards_better": 2,
+    "boards_worse": 15,
+    "wilcoxon_p": 0.0008392333984375,
+    "wilcoxon_n": 17
+   },
+   "blur: denoise - raw": {
+    "boards": 17,
+    "map50_diff_ci": [
+     -1.5,
+     0.7
+    ],
+    "map_diff_ci": [
+     -0.6,
+     0.1
+    ],
+    "share_not_better": 0.8,
+    "boards_better": 6,
+    "boards_worse": 10,
+    "wilcoxon_p": 0.433197021484375,
+    "wilcoxon_n": 16
+   },
+   "blur: sharpen - raw": {
+    "boards": 17,
+    "map50_diff_ci": [
+     -0.3,
+     3.9
+    ],
+    "map_diff_ci": [
+     -0.1,
+     1.3
+    ],
+    "share_not_better": 0.045,
+    "boards_better": 12,
+    "boards_worse": 4,
+    "wilcoxon_p": 0.104583740234375,
+    "wilcoxon_n": 16
+   },
+   "noise: clahe - raw": {
+    "boards": 17,
+    "map50_diff_ci": [
+     -13.1,
+     -8.5
+    ],
+    "map_diff_ci": [
+     -7.5,
+     -4.4
+    ],
+    "share_not_better": 1.0,
+    "boards_better": 2,
+    "boards_worse": 15,
+    "wilcoxon_p": 7.62939453125e-05,
+    "wilcoxon_n": 17
+   },
+   "noise: denoise - raw": {
+    "boards": 17,
+    "map50_diff_ci": [
+     3.2,
+     7.2
+    ],
+    "map_diff_ci": [
+     1.9,
+     4.8
+    ],
+    "share_not_better": 0.0,
+    "boards_better": 13,
+    "boards_worse": 4,
+    "wilcoxon_p": 0.0055694580078125,
+    "wilcoxon_n": 17
+   },
+   "noise: sharpen - raw": {
+    "boards": 17,
+    "map50_diff_ci": [
+     -13.1,
+     -8.2
+    ],
+    "map_diff_ci": [
+     -8.9,
+     -4.9
+    ],
+    "share_not_better": 1.0,
+    "boards_better": 0,
+    "boards_worse": 17,
+    "wilcoxon_p": 1.52587890625e-05,
+    "wilcoxon_n": 17
+   },
+   "low_contrast: clahe - raw": {
+    "boards": 17,
+    "map50_diff_ci": [
+     -1.9,
+     5.4
+    ],
+    "map_diff_ci": [
+     -3.9,
+     1.3
+    ],
+    "share_not_better": 0.229,
+    "boards_better": 10,
+    "boards_worse": 7,
+    "wilcoxon_p": 0.4306793212890625,
+    "wilcoxon_n": 17
+   },
+   "low_contrast: denoise - raw": {
+    "boards": 17,
+    "map50_diff_ci": [
+     -1.3,
+     1.7
+    ],
+    "map_diff_ci": [
+     -0.5,
+     1.1
+    ],
+    "share_not_better": 0.381,
+    "boards_better": 6,
+    "boards_worse": 11,
+    "wilcoxon_p": 0.5790557861328125,
+    "wilcoxon_n": 17
+   },
+   "low_contrast: sharpen - raw": {
+    "boards": 17,
+    "map50_diff_ci": [
+     -0.3,
+     2.6
+    ],
+    "map_diff_ci": [
+     -0.6,
+     0.9
+    ],
+    "share_not_better": 0.047,
+    "boards_better": 11,
+    "boards_worse": 6,
+    "wilcoxon_p": 0.677703857421875,
+    "wilcoxon_n": 17
+   }
+  }
+ },
+ "wiou": {
+  "val_map50": {
+   "yolo11s_4cls_sqrt_1024_wiou": 74.6,
+   "yolo11s_4cls_sqrt_1024_seed1": 74.8,
+   "yolo11s_4cls_sqrt_1024_seed2": 75.6
+  },
+  "seed_val_map50": [
+   75.3,
+   74.8,
+   75.6
+  ],
+  "seed_spread": 0.7999999999999972,
+  "wiou_adopted": false
+ },
+ "balance": {
+  "val": {
+   "Live_Knot": 713,
+   "Dead_Knot": 482,
+   "Resin": 88,
+   "Crack": 111
+  },
+  "test": {
+   "Live_Knot": 406,
+   "Dead_Knot": 343,
+   "Resin": 69,
+   "Crack": 95
+  },
+  "train_plain": {
+   "Live_Knot": 2899,
+   "Dead_Knot": 2071,
+   "Resin": 489,
+   "Crack": 306
+  },
+  "train_full": {
+   "Live_Knot": 2899,
+   "Dead_Knot": 3071,
+   "Resin": 2899,
+   "Crack": 2899
+  },
+  "synth_full": {
+   "target": {
+    "Live_Knot": 2899,
+    "Dead_Knot": 2899,
+    "Resin": 2899,
+    "Crack": 2899
+   },
+   "synthetic_images": 1488,
+   "canvases_available": 566,
+   "pasted": {
+    "Dead_Knot": 364,
+    "Resin": 2318,
+    "Crack": 2550
+   },
+   "canvas_boxes": {
+    "Dead_Knot": 636,
+    "Resin": 92,
+    "Crack": 43
+   },
+   "blend_modes": {
+    "poisson": 2653,
+    "alpha": 2579
+   },
+   "max_reuse_per_source": 17
+  },
+  "train_sqrt": {
+   "Live_Knot": 2899,
+   "Dead_Knot": 2470,
+   "Resin": 1191,
+   "Crack": 942
+  },
+  "synth_sqrt": {
+   "target": {
+    "Live_Knot": 2899,
+    "Dead_Knot": 2450,
+    "Resin": 1191,
+    "Crack": 942
+   },
+   "synthetic_images": 426,
+   "canvases_available": 566,
+   "pasted": {
+    "Dead_Knot": 214,
+    "Resin": 677,
+    "Crack": 621
+   },
+   "canvas_boxes": {
+    "Dead_Knot": 185,
+    "Resin": 25,
+    "Crack": 15
+   },
+   "blend_modes": {
+    "poisson": 721,
+    "alpha": 791
+   },
+   "max_reuse_per_source": 5
+  }
+ }
+}

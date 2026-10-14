@@ -15,3 +15,11 @@ weights/
 .gradio/
 deploy/hf_space/weights/
 deploy/hf_space/samples/
+photo_tests/
+
+# regenerable: balanced image sets and prediction caches
+dataset_4cls/
+eval/capture/
+eval/capture_enh/
+eval/bri/pred_*.json
+runs/

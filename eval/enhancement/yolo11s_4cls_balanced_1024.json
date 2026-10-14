@@ -1,0 +1,405 @@
+{
+  "weights": "weights/yolo11s_4cls_balanced.pt",
+  "imgsz": 1024,
+  "split": "val",
+  "table": {
+    "normal": {
+      "raw": {
+        "map50": 0.7483906106766465,
+        "map": 0.3594061584328386
+      },
+      "clahe": {
+        "map50": 0.657825682434987,
+        "map": 0.2988279715946965
+      },
+      "denoise": {
+        "map50": 0.7525459605921898,
+        "map": 0.35927122851294235
+      },
+      "sharpen": {
+        "map50": 0.7378399360986276,
+        "map": 0.3454762068576926
+      }
+    },
+    "low_light": {
+      "raw": {
+        "map50": 0.5000016516761955,
+        "map": 0.21544567525647595
+      },
+      "clahe": {
+        "map50": 0.2770081757715344,
+        "map": 0.1061983032049179
+      },
+      "denoise": {
+        "map50": 0.4800005454025835,
+        "map": 0.2129225770688845
+      },
+      "sharpen": {
+        "map50": 0.49256953671561754,
+        "map": 0.2103812863145896
+      }
+    },
+    "overexposed": {
+      "raw": {
+        "map50": 0.582205655789791,
+        "map": 0.2597441526762168
+      },
+      "clahe": {
+        "map50": 0.47916533173480697,
+        "map": 0.21180259786762107
+      },
+      "denoise": {
+        "map50": 0.5817536880030698,
+        "map": 0.2564204401090961
+      },
+      "sharpen": {
+        "map50": 0.5773709549261482,
+        "map": 0.25714581642507517
+      }
+    },
+    "blur": {
+      "raw": {
+        "map50": 0.732941884688397,
+        "map": 0.35406108754328497
+      },
+      "clahe": {
+        "map50": 0.6220997137856619,
+        "map": 0.2776921435118188
+      },
+      "denoise": {
+        "map50": 0.7288083967022462,
+        "map": 0.3510293134470047
+      },
+      "sharpen": {
+        "map50": 0.7506882281626174,
+        "map": 0.3602432646054142
+      }
+    },
+    "noise": {
+      "raw": {
+        "map50": 0.6783141257019029,
+        "map": 0.31200499945692134
+      },
+      "clahe": {
+        "map50": 0.5647040005613093,
+        "map": 0.2515377608406456
+      },
+      "denoise": {
+        "map50": 0.7303037191996883,
+        "map": 0.34813433005175937
+      },
+      "sharpen": {
+        "map50": 0.5704797361860615,
+        "map": 0.24303780161121447
+      }
+    },
+    "low_contrast": {
+      "raw": {
+        "map50": 0.6125370799793253,
+        "map": 0.28656160862624946
+      },
+      "clahe": {
+        "map50": 0.6263932460914834,
+        "map": 0.2732328271212345
+      },
+      "denoise": {
+        "map50": 0.6155183963473907,
+        "map": 0.2896963528922279
+      },
+      "sharpen": {
+        "map50": 0.6258401055667252,
+        "map": 0.2877448790239244
+      }
+    }
+  },
+  "tests": {
+    "normal: clahe - raw": {
+      "boards": 17,
+      "map50_diff_ci": [
+        -11.2,
+        -6.5
+      ],
+      "map_diff_ci": [
+        -7.6,
+        -4.5
+      ],
+      "share_not_better": 1.0,
+      "boards_better": 3,
+      "boards_worse": 14,
+      "wilcoxon_p": 0.0055694580078125,
+      "wilcoxon_n": 17
+    },
+    "normal: denoise - raw": {
+      "boards": 17,
+      "map50_diff_ci": [
+        -1.0,
+        1.7
+      ],
+      "map_diff_ci": [
+        -0.6,
+        0.8
+      ],
+      "share_not_better": 0.293,
+      "boards_better": 10,
+      "boards_worse": 7,
+      "wilcoxon_p": 0.079681396484375,
+      "wilcoxon_n": 17
+    },
+    "normal: sharpen - raw": {
+      "boards": 17,
+      "map50_diff_ci": [
+        -3.5,
+        0.3
+      ],
+      "map_diff_ci": [
+        -2.3,
+        -0.7
+      ],
+      "share_not_better": 0.916,
+      "boards_better": 4,
+      "boards_worse": 12,
+      "wilcoxon_p": 0.083251953125,
+      "wilcoxon_n": 16
+    },
+    "low_light: clahe - raw": {
+      "boards": 17,
+      "map50_diff_ci": [
+        -27.8,
+        -16.9
+      ],
+      "map_diff_ci": [
+        -14.4,
+        -7.9
+      ],
+      "share_not_better": 1.0,
+      "boards_better": 0,
+      "boards_worse": 17,
+      "wilcoxon_p": 1.52587890625e-05,
+      "wilcoxon_n": 17
+    },
+    "low_light: denoise - raw": {
+      "boards": 17,
+      "map50_diff_ci": [
+        -3.0,
+        -1.1
+      ],
+      "map_diff_ci": [
+        -1.1,
+        0.3
+      ],
+      "share_not_better": 1.0,
+      "boards_better": 3,
+      "boards_worse": 14,
+      "wilcoxon_p": 0.0395355224609375,
+      "wilcoxon_n": 17
+    },
+    "low_light: sharpen - raw": {
+      "boards": 17,
+      "map50_diff_ci": [
+        -2.6,
+        0.2
+      ],
+      "map_diff_ci": [
+        -1.3,
+        -0.1
+      ],
+      "share_not_better": 0.935,
+      "boards_better": 4,
+      "boards_worse": 13,
+      "wilcoxon_p": 0.00665283203125,
+      "wilcoxon_n": 17
+    },
+    "overexposed: clahe - raw": {
+      "boards": 17,
+      "map50_diff_ci": [
+        -13.8,
+        -8.1
+      ],
+      "map_diff_ci": [
+        -7.7,
+        -2.8
+      ],
+      "share_not_better": 1.0,
+      "boards_better": 2,
+      "boards_worse": 15,
+      "wilcoxon_p": 0.0055694580078125,
+      "wilcoxon_n": 17
+    },
+    "overexposed: denoise - raw": {
+      "boards": 17,
+      "map50_diff_ci": [
+        -1.2,
+        1.0
+      ],
+      "map_diff_ci": [
+        -1.0,
+        0.3
+      ],
+      "share_not_better": 0.643,
+      "boards_better": 6,
+      "boards_worse": 11,
+      "wilcoxon_p": 0.7819061279296875,
+      "wilcoxon_n": 17
+    },
+    "overexposed: sharpen - raw": {
+      "boards": 17,
+      "map50_diff_ci": [
+        -1.7,
+        0.5
+      ],
+      "map_diff_ci": [
+        -1.0,
+        0.3
+      ],
+      "share_not_better": 0.87,
+      "boards_better": 3,
+      "boards_worse": 14,
+      "wilcoxon_p": 0.079681396484375,
+      "wilcoxon_n": 17
+    },
+    "blur: clahe - raw": {
+      "boards": 17,
+      "map50_diff_ci": [
+        -13.6,
+        -7.8
+      ],
+      "map_diff_ci": [
+        -10.2,
+        -5.2
+      ],
+      "share_not_better": 1.0,
+      "boards_better": 2,
+      "boards_worse": 15,
+      "wilcoxon_p": 0.0008392333984375,
+      "wilcoxon_n": 17
+    },
+    "blur: denoise - raw": {
+      "boards": 17,
+      "map50_diff_ci": [
+        -1.5,
+        0.7
+      ],
+      "map_diff_ci": [
+        -0.6,
+        0.1
+      ],
+      "share_not_better": 0.8,
+      "boards_better": 6,
+      "boards_worse": 10,
+      "wilcoxon_p": 0.433197021484375,
+      "wilcoxon_n": 16
+    },
+    "blur: sharpen - raw": {
+      "boards": 17,
+      "map50_diff_ci": [
+        -0.3,
+        3.9
+      ],
+      "map_diff_ci": [
+        -0.1,
+        1.3
+      ],
+      "share_not_better": 0.045,
+      "boards_better": 12,
+      "boards_worse": 4,
+      "wilcoxon_p": 0.104583740234375,
+      "wilcoxon_n": 16
+    },
+    "noise: clahe - raw": {
+      "boards": 17,
+      "map50_diff_ci": [
+        -13.1,
+        -8.5
+      ],
+      "map_diff_ci": [
+        -7.5,
+        -4.4
+      ],
+      "share_not_better": 1.0,
+      "boards_better": 2,
+      "boards_worse": 15,
+      "wilcoxon_p": 7.62939453125e-05,
+      "wilcoxon_n": 17
+    },
+    "noise: denoise - raw": {
+      "boards": 17,
+      "map50_diff_ci": [
+        3.2,
+        7.2
+      ],
+      "map_diff_ci": [
+        1.9,
+        4.8
+      ],
+      "share_not_better": 0.0,
+      "boards_better": 13,
+      "boards_worse": 4,
+      "wilcoxon_p": 0.0055694580078125,
+      "wilcoxon_n": 17
+    },
+    "noise: sharpen - raw": {
+      "boards": 17,
+      "map50_diff_ci": [
+        -13.1,
+        -8.2
+      ],
+      "map_diff_ci": [
+        -8.9,
+        -4.9
+      ],
+      "share_not_better": 1.0,
+      "boards_better": 0,
+      "boards_worse": 17,
+      "wilcoxon_p": 1.52587890625e-05,
+      "wilcoxon_n": 17
+    },
+    "low_contrast: clahe - raw": {
+      "boards": 17,
+      "map50_diff_ci": [
+        -1.9,
+        5.4
+      ],
+      "map_diff_ci": [
+        -3.9,
+        1.3
+      ],
+      "share_not_better": 0.229,
+      "boards_better": 10,
+      "boards_worse": 7,
+      "wilcoxon_p": 0.4306793212890625,
+      "wilcoxon_n": 17
+    },
+    "low_contrast: denoise - raw": {
+      "boards": 17,
+      "map50_diff_ci": [
+        -1.3,
+        1.7
+      ],
+      "map_diff_ci": [
+        -0.5,
+        1.1
+      ],
+      "share_not_better": 0.381,
+      "boards_better": 6,
+      "boards_worse": 11,
+      "wilcoxon_p": 0.5790557861328125,
+      "wilcoxon_n": 17
+    },
+    "low_contrast: sharpen - raw": {
+      "boards": 17,
+      "map50_diff_ci": [
+        -0.3,
+        2.6
+      ],
+      "map_diff_ci": [
+        -0.6,
+        0.9
+      ],
+      "share_not_better": 0.047,
+      "boards_better": 11,
+      "boards_worse": 6,
+      "wilcoxon_p": 0.677703857421875,
+      "wilcoxon_n": 17
+    }
+  }
+}
