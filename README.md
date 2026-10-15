@@ -51,8 +51,7 @@ per-class confidence thresholds, CLAHE / denoising / sharpening (hypothesis H1 r
 | File | What it is |
 |---|---|
 | `Major_Project_Final_Presentation_V4.1.pptx` | Final (100 %) review deck, 34 slides (V4.0: before the full dataset) |
-| `Project_Status_and_Mathematical_Model_2026-10-14.docx` | Phase-by-phase status and the mathematical model (draft) |
-| `BRI_Model_Update_2026-10-07.docx` | The guide's BRI model: our reading, changes and validation |
+| `Final_Project_Report_2026-10-15.docx` / `.pdf` | Final report (10 pages): phases incl. the leakage fix, mathematical model, full dataset, BRI and its validation |
 | `Presentation_Speaker_Notes.docx`, `Major_Project_50pct_Presentation_V3.0.pptx` | 50 % review material |
 | [NOTES.md](NOTES.md) | Decision log: every run, result and deviation (sections 1-23) |
 | [docs/PROGRESS.md](docs/PROGRESS.md) | Progress log up to the 50 % review |
@@ -72,7 +71,7 @@ per-class confidence thresholds, CLAHE / denoising / sharpening (hypothesis H1 r
 | `bri.py`, `bri_validate.py`, `bri_validate_fused.py`, `bri_validate_full.py` | Board Recoverability Index and its validation |
 | `enhance_study.py` | CLAHE / denoise / sharpen under six imaging conditions (validation) |
 | `app.py` | Gradio demo application |
-| `docs/collect_results.py`, `docs/build_final_deck.py`, `docs/make_final_diagrams.py`, `docs/make_status_doc.py` | Rebuild the deck, figures and status document from the result files |
+| `docs/collect_results.py`, `docs/build_final_deck.py`, `docs/make_final_diagrams.py`, `docs/make_final_report.py` | Rebuild the deck, figures and status document from the result files |
 
 Results: `eval/` (test and validation tables, fusion, BRI, enhancement, statistics), `runs_log/` (training logs
 per run), `kaggle_upload/` (the Kaggle notebooks that produced every run).
