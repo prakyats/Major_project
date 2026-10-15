@@ -13,7 +13,7 @@ Notes on the config
   copy_paste is omitted: it needs polygon labels and is a no-op on boxes.
   degrees/flipud = 0 : grain runs along the scan axis; vertical flips are unphysical.
 """
-import argparse, shutil
+import argparse, shutil, time
 from pathlib import Path
 from ultralytics import YOLO
 
@@ -42,6 +42,8 @@ def main():
     ap.add_argument("--imgsz", type=int, default=CFG["imgsz"], help="override CFG imgsz (rect stays on)")
     ap.add_argument("--model", default="yolo11m.pt", help="pretrained checkpoint, e.g. yolo11s.pt for the baseline run")
     ap.add_argument("--seed", type=int, default=CFG["seed"], help="override CFG seed (repeat runs for run-to-run spread)")
+    ap.add_argument("--max-hours", type=float, default=None,
+                    help="stop after the first epoch that ends past this wall-clock budget (Kaggle 12 h limit); best.pt is kept")
     ap.add_argument("--persist", default=None, help="optional dir to copy weights+results into after training")
     a = ap.parse_args()
 
@@ -50,13 +52,20 @@ def main():
     cfg = dict(CFG, epochs=a.epochs, batch=a.batch, lr0=a.lr0, patience=a.patience, imgsz=a.imgsz, seed=a.seed,
                device=a.device, project=a.project, name=a.name, exist_ok=True)
 
+    model = YOLO(str(last) if last.exists() else a.model)
+    if a.max_hours:
+        t0 = time.time()
+
+        def guard(trainer):
+            if (time.time() - t0) / 3600 > a.max_hours:
+                print(f"time guard: {a.max_hours} h budget reached after epoch {trainer.epoch + 1}, stopping")
+                trainer.stop = True
+        model.add_callback("on_fit_epoch_end", guard)
     if last.exists():
         print(f"resuming from {last}")
-        model = YOLO(str(last))
         model.train(resume=True)
     else:
         print(f"fresh run from COCO-pretrained {a.model}")
-        model = YOLO(a.model)
         model.train(data=a.data, **cfg)
 
     if a.persist:

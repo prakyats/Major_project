@@ -1,0 +1,214 @@
+{
+  "fusion_grid_val_full": [
+    {
+      "t_iou": 0.45,
+      "weights": [
+        1,
+        1
+      ],
+      "val_full_map50": 0.7992157124045697,
+      "val_full_map": 0.4274082594270824
+    },
+    {
+      "t_iou": 0.45,
+      "weights": [
+        2,
+        1
+      ],
+      "val_full_map50": 0.7966170419152288,
+      "val_full_map": 0.42677867503330036
+    },
+    {
+      "t_iou": 0.45,
+      "weights": [
+        1,
+        2
+      ],
+      "val_full_map50": 0.796333465244589,
+      "val_full_map": 0.4264022533232622
+    },
+    {
+      "t_iou": 0.55,
+      "weights": [
+        1,
+        1
+      ],
+      "val_full_map50": 0.7990684427282568,
+      "val_full_map": 0.4319103940126216
+    },
+    {
+      "t_iou": 0.55,
+      "weights": [
+        2,
+        1
+      ],
+      "val_full_map50": 0.7980527683441786,
+      "val_full_map": 0.4326433599850253
+    },
+    {
+      "t_iou": 0.55,
+      "weights": [
+        1,
+        2
+      ],
+      "val_full_map50": 0.7984691266507498,
+      "val_full_map": 0.43177014931233204
+    },
+    {
+      "t_iou": 0.65,
+      "weights": [
+        1,
+        1
+      ],
+      "val_full_map50": 0.8127792055082093,
+      "val_full_map": 0.4442400256698762
+    },
+    {
+      "t_iou": 0.65,
+      "weights": [
+        2,
+        1
+      ],
+      "val_full_map50": 0.8107159270582307,
+      "val_full_map": 0.4431359556655044
+    },
+    {
+      "t_iou": 0.65,
+      "weights": [
+        1,
+        2
+      ],
+      "val_full_map50": 0.8117791915165624,
+      "val_full_map": 0.4429864487672045
+    }
+  ],
+  "chosen": {
+    "t_iou": 0.65,
+    "weights": [
+      1,
+      1
+    ],
+    "val_full_map50": 0.8127792055082093,
+    "val_full_map": 0.4442400256698762
+  },
+  "val_orig": {
+    "deployed_fusion": [
+      78.1,
+      39.2
+    ],
+    "full_1024": [
+      79.1,
+      39.9
+    ],
+    "full_1280": [
+      79.9,
+      40.5
+    ],
+    "full_fusion": [
+      80.2,
+      41.7
+    ]
+  },
+  "decision": {
+    "best_new_on_val_orig": "full_fusion",
+    "val_orig_map50": 80.2,
+    "threshold": 78.1,
+    "replace": true
+  },
+  "test": {
+    "deployed_fusion": {
+      "orig": {
+        "map50": 74.7,
+        "map": 36.7,
+        "ap50": {
+          "Live_Knot": 78.6,
+          "Dead_Knot": 90.3,
+          "Resin": 69.7,
+          "Crack": 60.2
+        }
+      }
+    },
+    "full_1024": {
+      "orig": {
+        "map50": 75.7,
+        "map": 37.9,
+        "ap50": {
+          "Live_Knot": 78.4,
+          "Dead_Knot": 89.5,
+          "Resin": 73.5,
+          "Crack": 61.6
+        }
+      },
+      "full": {
+        "map50": 80.5,
+        "map": 42.8,
+        "ap50": {
+          "Live_Knot": 86.8,
+          "Dead_Knot": 86.8,
+          "Resin": 82.1,
+          "Crack": 66.3
+        }
+      }
+    },
+    "full_1280": {
+      "orig": {
+        "map50": 76.1,
+        "map": 38.8,
+        "ap50": {
+          "Live_Knot": 78.9,
+          "Dead_Knot": 88.6,
+          "Resin": 74.5,
+          "Crack": 62.3
+        }
+      },
+      "full": {
+        "map50": 80.1,
+        "map": 43.0,
+        "ap50": {
+          "Live_Knot": 85.9,
+          "Dead_Knot": 86.9,
+          "Resin": 82.4,
+          "Crack": 65.2
+        }
+      }
+    },
+    "full_fusion": {
+      "orig": {
+        "map50": 76.9,
+        "map": 39.3,
+        "ap50": {
+          "Live_Knot": 79.3,
+          "Dead_Knot": 89.6,
+          "Resin": 76.6,
+          "Crack": 62.2
+        }
+      },
+      "full": {
+        "map50": 81.3,
+        "map": 44.1,
+        "ap50": {
+          "Live_Knot": 87.1,
+          "Dead_Knot": 87.5,
+          "Resin": 83.3,
+          "Crack": 67.4
+        }
+      }
+    }
+  },
+  "stats_new_minus_deployed_test_orig": {
+    "boards": 12,
+    "map50_diff_ci": [
+      0.5,
+      4.3
+    ],
+    "map_diff_ci": [
+      0.5,
+      5.2
+    ],
+    "share_not_better": 0.006,
+    "boards_better": 8,
+    "boards_worse": 4,
+    "wilcoxon_p": 0.30126953125,
+    "wilcoxon_n": 12
+  }
+}

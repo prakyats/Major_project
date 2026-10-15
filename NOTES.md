@@ -466,3 +466,46 @@ Final single setup sqrt@1024: val mAP50 seed 42 / 1 / 2 = 75.3 / 74.8 / 75.6 -> 
 Wise-IoU v3 (seed 42): val 74.6 / 35.7 (Crack 59.4) -> not above CIoU by more than the spread -> not adopted, no test
 evaluation (rule in the notebook's first cell). Test evaluations in total stay at 7.
 Review date: 24 October 2026, 9 am (title slide, Gantt).
+
+## 23. Full dataset extension (Option A, 4 classes) - plan fixed 2026-10-14 before any result
+
+Source: Zenodo 4694695 (Kodytek et al.): 20,276 images (10 zips of BMP + Bouding_Boxes.zip with
+"Class x1 y1 x2 y2" normalised corners; verified identical to our labels for 100000000). 407 boards; all 81 of ours
+included, 326 new. Kaggle CPU notebook `prakyats/wood-full-convert` re-encodes the 16,276 new images at JPEG q95
+(our subset matches q95: PSNR 36.64 dB vs BMP) and writes 8-class YOLO labels (Blue_Stain, overgrown dropped).
+Split: our 81 boards keep their split (52 / 17 / 12); the 326 new boards are split 70 / 18 / 12 by board, seed 42.
+Models (Option A): YOLO11s, 4 classes, partial balance sqrt(n_c n_max), at 1024 and 1280 px; epochs 40, patience 15,
+batch 32, lr0 0.001, seed 42 (5x the data per epoch). Fusion of the two with the section-17 grid, chosen on val.
+**Rule:** the new system replaces the deployed one only if its 4-class mAP50 on the ORIGINAL 714 validation images
+exceeds the deployed fusion's 78.1. Test reported on the original 469 test images (direct comparison with 74.7) and on
+the full new test split; each tested once.
+
+### 23a. Change of data source (2026-10-15, before any full-dataset result)
+The Zenodo conversion notebook hit Kaggle's 12 h session limit (cancelled 05:23, not finished); the chained 1024 run was
+started without its input and is discarded. New images now come from the Kaggle mirror `kirs0816/wood-surface-defects`
+(CC0; all 20,276 Kodytek et al. images as 2800x1024 JPEG + COCO boxes). Checked before use: 43,974 boxes (= Zenodo),
+407 boards, mirror vs our copy of 110900073 PSNR 39.0 dB (mirror is JPEG ~q75, ours q95); 3,953 / 4,000 subset label
+files identical, the other 46-47 differ by <= 1 px rounding or a 2-3 px micro-box. The 4,000 subset images keep their
+original JPEGs and labels, so val_orig / test_orig are byte-identical to the deployed evaluation (asserted in the
+notebook: 714 / 469 images, 4-class boxes 713/482/88/111 and 406/343/69/95). Split rule, models and decision rule unchanged.
+Added `--max-hours` wall-clock guard to train_yolo11m.py (stops after the epoch that passes ~11 h minus prep; best.pt kept).
+A CPU smoke notebook (`wood-full4-smoke`) runs the identical pipeline on 48/24/24 images first; the GPU runs
+(`wood-full4-v2-1024`, `wood-full4-v2-1280`) are pushed only if it passes (`kaggle_upload/run_full_chain_v2.sh`).
+
+### 23b. Full-dataset results (2026-10-15; `eval_full.py` -> eval/math_model/full_dataset.json)
+Runs: wood-full4-v2-1024 (40 epochs, done 12:30) and wood-full4-v2-1280 (40 epochs, done 13:43); time guard not triggered.
+Train 16,418 images (sqrt balance: Live 14,649 / Dead 10,964 / Resin 5,940 / Crack 4,612); val_full 3,746 images, test_full 2,488.
+Fusion of the two chosen on val_full (grid as section 17): t_iou 0.65, weights 1:1 -> val_full 81.3 / 44.4.
+| Original 714 val images (decision set) | mAP50 | mAP50-95 |
+|---|---|---|
+| deployed 4-model fusion | 78.1 | 39.2 |
+| full 1024 | 79.1 | 39.9 |
+| full 1280 | 79.9 | 40.5 |
+| full fusion (1024 + 1280) | **80.2** | 41.7 |
+Rule (> 78.1): **met -> the full-data fusion replaces the deployed system.**
+Test, scored once. Original 469 images: deployed 74.7 / 36.7; full 1024 75.7 / 37.9; full 1280 76.1 / 38.8;
+**full fusion 76.9 / 39.3** (AP50 Live 79.3, Dead 89.6, Resin 76.6, Crack 62.2). Full test split (2,488 images, 51 boards):
+1024 80.5 / 42.8; 1280 80.1 / 43.0; **fusion 81.3 / 44.1** (Live 87.1, Dead 87.5, Resin 83.3, Crack 67.4).
+Paired, original test boards, full fusion minus deployed: mAP50 +2.2, 95 % CI [+0.5, +4.3]; mAP50-95 CI [+0.5, +5.2];
+8 boards better / 4 worse; Wilcoxon p 0.30 (12 boards only - the bootstrap CI is the primary statistic, as in section 17).
+Note: chosen t_iou 0.65 is at the edge of the pre-set grid; not extended, to keep the grid fixed.

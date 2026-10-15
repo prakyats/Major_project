@@ -43,12 +43,15 @@ R["val4"] = {k: metrics(f"eval/{v}/val_metrics.csv") for k, v in models4.items()
 R["test4"] = {k: metrics(f"eval/{v}/test_metrics.csv") for k, v in models4.items()}
 R["runs4"] = {k: results_csv(f"runs_log/{d}/results.csv") for k, d in {
     "plain_1024": "run4_yolo11s_4cls_plain_v1", "full_1024": "run4_yolo11s_4cls_full_v1", "sqrt_1024": "run4_yolo11s_4cls_sqrt_v1",
-    "sqrt_1280": "run5_yolo11s_4cls_sqrt_1280_v1", "plain_1280": "run5_yolo11s_4cls_plain_1280_v1"}.items()}
+    "sqrt_1280": "run5_yolo11s_4cls_sqrt_1280_v1", "plain_1280": "run5_yolo11s_4cls_plain_1280_v1",
+    "full4_1024": "run7_full4_1024_v2", "full4_1280": "run7_full4_1280_v2"}.items()}
 R["hours4"] = (js("runs_log/run4_4cls_kaggle_v1/runs_done.json") or {}).get("hours")
 R["sel1280"] = js("runs_log/run5_4cls_1280_v1/selection.json")
 R["hours1280"] = (js("runs_log/run5_4cls_1280_v1/runs_done.json") or {}).get("hours")
 R["fusion4"] = js("eval/math_model/4cls_fusion.json")
 R["stats4"] = js("eval/stats_4cls.json")
+R["full"] = js("eval/math_model/full_dataset.json")
+R["balance_full"] = js("runs_log/run7_full4_1024_v2/balance_report.json")
 R["final"] = js("docs/final_model.json")
 fin = R["final"] or {}
 R["bri"] = js(f"eval/bri/bri_validation_{fin.get('bri_tag', 'yolo11s_4cls_balanced_1024')}.json")

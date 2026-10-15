@@ -1,0 +1,17 @@
+{
+ "id": "prakyats/wood-full4-smoke",
+ "title": "wood-full4-smoke",
+ "code_file": "wood-full4-smoke.ipynb",
+ "language": "python",
+ "kernel_type": "notebook",
+ "is_private": true,
+ "enable_gpu": false,
+ "enable_internet": true,
+ "dataset_sources": [
+  "prakyats/wood-defects-clean",
+  "prakyats/wood-defects-scripts",
+  "kirs0816/wood-surface-defects"
+ ],
+ "competition_sources": [],
+ "kernel_sources": []
+}

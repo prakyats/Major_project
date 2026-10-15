@@ -52,7 +52,9 @@ CFT_MM3 = 28316846.6     # one cubic foot in cubic millimetres
 
 
 # weighted box fusion (mathematical model; settings chosen on validation by math_model.py)
-PART_WEIGHTS = {   # extra 4-class members of the deployed fusion, not listed on their own
+PART_WEIGHTS = {   # members of the fusions, not listed on their own
+    "full 1024": ROOT / "weights" / "yolo11s_full4_1024.pt",
+    "full 1280": ROOT / "weights" / "yolo11s_full4_1280.pt",
     "4cls plain 1024": ROOT / "weights" / "yolo11s_4cls_plain.pt",
     "4cls sqrt 1280": ROOT / "weights" / "yolo11s_4cls_sqrt_1280.pt",
     "4cls plain 1280": ROOT / "weights" / "yolo11s_4cls_plain_1280.pt",
@@ -66,7 +68,10 @@ def _cfg(name, default):
 
 
 FUSIONS = {
-    "Final: fusion of four 4-class YOLO11s models (deployed)": dict(
+    "Final: fusion of two YOLO11s 4-class models, full dataset (deployed)": dict(
+        parts=[("full 1024", 1024), ("full 1280", 1280)],
+        cfg=_cfg("full_dataset.json", {"t_iou": 0.65, "weights": [1, 1]}), names=NAMES4, bri="fusion_full_1024"),
+    "Fusion of four 4-class YOLO11s models (4,000-image subset)": dict(
         parts=[("YOLO11s 4-class balanced (final)", 1024), ("4cls plain 1024", 1024), ("4cls sqrt 1280", 1280), ("4cls plain 1280", 1280)],
         cfg=_cfg("4cls_fusion.json", {"t_iou": 0.55, "weights": [2, 1, 1, 1]}), names=NAMES4, bri="fusion4_1024"),
     "Fusion (WBF): YOLO11m + YOLO11s, 8 classes": dict(
@@ -363,10 +368,17 @@ to 53-58 (new). Quartzity is unlearned by both (125 training boxes). Capacity is
 | YOLO11s, 4 classes, no balancing | 4 | 71.7 | 33.4 |
 | **YOLO11s, 4 classes, partial balance (final single model)** | 4 | 69.2 | 33.1 |
 | YOLO11s, 4 classes, partial balance, 1280 px | 4 | 71.6 | 34.3 |
+| Fusion (WBF) of four 4-class YOLO11s models (4,000-image subset) | 4 | 74.7 | 36.7 |
+| YOLO11s 4-class, full dataset (20,276 images), 1024 px | 4 | 75.7 | 37.9 |
+| YOLO11s 4-class, full dataset, 1280 px | 4 | 76.1 | 38.8 |
+| **Final: fusion (WBF) of the two full-dataset models (deployed)** | 4 | **76.9** | **39.3** |
 
 Fusion raises mAP50-95 by +2.4 over YOLO11s (95% board-bootstrap interval +1.6 to +3.2). On the same four classes the
-8-class YOLO11s scores 69.6 mAP50; no difference among the 4-class models is statistically significant.
-Grading (Board Recoverability Index) agrees with annotation-based grades with weighted kappa 0.86 on the test images.
+8-class YOLO11s scores 69.6 mAP50. Training on the full dataset (407 boards; our 81 boards keep their split) lifts the
+final system to 76.9 on the same 469 test images (+2.2 over the subset fusion, board-bootstrap interval +0.5 to +4.3) and
+to **81.3 mAP50 / 44.1 mAP50-95 on the full test split** (2,488 images, 51 boards; AP50 Live_Knot 87.1, Dead_Knot 87.5,
+Resin 83.3, Crack 67.4). Grading (Board Recoverability Index) with the final detector agrees with annotation-based
+grades with weighted kappa 0.87 on the test images (exact 78.3%, within one grade 97.4%; 10 of 12 boards exact).
 
 ### YOLO11m per class (test)
 {read('eval/yolo11m_final/test_metrics.md')}

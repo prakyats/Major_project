@@ -99,7 +99,10 @@ def link(src, dst):
     try:
         os.link(src, dst)
     except OSError:
-        shutil.copy2(src, dst)
+        try:                                   # read-only or cross-device source (Kaggle inputs): symlink
+            os.symlink(os.path.realpath(src), dst)
+        except OSError:
+            shutil.copy2(src, dst)
 
 
 def write_split(src_root, dst_root, split):

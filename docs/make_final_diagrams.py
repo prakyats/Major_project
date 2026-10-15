@@ -36,8 +36,8 @@ def methodology(out, final):
     fig = plt.figure(figsize=(12.05, 11.6), dpi=100)
     ax = fig.add_axes([0, 0, 1, 1]); ax.set_xlim(0, 1); ax.set_ylim(0, 1); ax.axis("off")
     cw, cx = 0.56, 0.22
-    box(ax, cx, 0.895, cw, 0.08, "Stage 1: Dataset preparation\n4,000 line-scan board images, 8 defect classes,\n"
-        "label cleaning, board-level train / val / test split (52 / 17 / 12 boards)", GREEN)
+    box(ax, cx, 0.895, cw, 0.08, "Stage 1: Dataset preparation\n4,000-image subset, then all 20,276 line-scan images (407 boards);\n"
+        "label cleaning, board-level split (subset 52 / 17 / 12, full 280 / 76 / 51 boards)", GREEN)
     arrow(ax, 0.5, 0.895, 0.5, 0.865)
     box(ax, cx, 0.785, cw, 0.08, "Stage 2: Input handling & class balancing\nrectangular high-resolution input, grain-safe "
         "augmentation,\ncopy-paste balancing of rare defect classes", GREEN)
@@ -56,7 +56,7 @@ def methodology(out, final):
         "× position → damage score, grade A / B / C / Reject", GREEN)
     arrow(ax, 0.27, 0.39, 0.27, 0.355); arrow(ax, 0.73, 0.39, 0.73, 0.355)
     box(ax, 0.06, 0.275, 0.42, 0.08, "Stage 7: Evaluation & comparison\nP, R, F1, mAP50, mAP50-95, ms/img; single-shot\n"
-        "test on 12 unseen boards; enhancement study", GREEN)
+        "test on 12 + 51 unseen boards; enhancement study", GREEN)
     box(ax, 0.52, 0.275, 0.42, 0.08, "Stage 8: Market price analytics\nquality grade to value: volume × recoverable\n"
         "share × price × grade factor", GREEN)
     line(ax, [0.27, 0.27], [0.275, 0.245]); line(ax, [0.73, 0.73], [0.275, 0.245]); line(ax, [0.27, 0.73], [0.245, 0.245])

@@ -1,0 +1,18 @@
+{
+ "id": "prakyats/wood-full4-v2-1280",
+ "title": "wood-full4-v2-1280",
+ "code_file": "wood-full4-v2-1280.ipynb",
+ "language": "python",
+ "kernel_type": "notebook",
+ "is_private": true,
+ "enable_gpu": true,
+ "enable_internet": true,
+ "dataset_sources": [
+  "prakyats/wood-defects-clean",
+  "prakyats/wood-defects-scripts",
+  "kirs0816/wood-surface-defects"
+ ],
+ "competition_sources": [],
+ "kernel_sources": [],
+ "machine_shape": "NvidiaTeslaT4"
+}

@@ -1,0 +1,15 @@
+{
+ "id": "prakyats/wood-full-convert",
+ "title": "wood-full-convert",
+ "code_file": "wood-full-convert.ipynb",
+ "language": "python",
+ "kernel_type": "notebook",
+ "is_private": true,
+ "enable_gpu": false,
+ "enable_internet": true,
+ "dataset_sources": [
+  "prakyats/wood-defects-clean"
+ ],
+ "competition_sources": [],
+ "kernel_sources": []
+}

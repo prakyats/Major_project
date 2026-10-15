@@ -1,0 +1,51 @@
+{
+  "val": {
+    "Live_Knot": 3648,
+    "Dead_Knot": 2336,
+    "Resin": 634,
+    "Crack": 384
+  },
+  "test": {
+    "Live_Knot": 2825,
+    "Dead_Knot": 1438,
+    "Resin": 404,
+    "Crack": 325
+  },
+  "train_plain": {
+    "Live_Knot": 14649,
+    "Dead_Knot": 8153,
+    "Resin": 2409,
+    "Crack": 1452
+  },
+  "train_sqrt": {
+    "Live_Knot": 14649,
+    "Dead_Knot": 10964,
+    "Resin": 5940,
+    "Crack": 4612
+  },
+  "synth_sqrt": {
+    "target": {
+      "Live_Knot": 14649,
+      "Dead_Knot": 10929,
+      "Resin": 5940,
+      "Crack": 4612
+    },
+    "synthetic_images": 2376,
+    "canvases_available": 2836,
+    "pasted": {
+      "Dead_Knot": 1820,
+      "Resin": 3398,
+      "Crack": 3060
+    },
+    "canvas_boxes": {
+      "Dead_Knot": 991,
+      "Resin": 133,
+      "Crack": 100
+    },
+    "blend_modes": {
+      "alpha": 4183,
+      "poisson": 4095
+    },
+    "max_reuse_per_source": 4
+  }
+}

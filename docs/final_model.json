@@ -1,8 +1,8 @@
 {
- "key": "fusion4",
+ "key": "fusion_full",
  "single_key": "sqrt_1024",
- "name": "fusion (WBF) of four 4-class YOLO11s models",
- "bri_tag": "fusion4_1024",
+ "name": "fusion (WBF) of two 4-class YOLO11s models trained on the full dataset (1024 + 1280 px)",
+ "bri_tag": "fusion_full_1024",
  "enh_tag": "yolo11s_4cls_balanced_1024",
- "rule": "NOTES.md sections 16, 17, 20"
+ "rule": "NOTES.md sections 16, 17, 20, 23"
 }
