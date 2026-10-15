@@ -24,7 +24,7 @@ from math_model import wbf_image
 
 ROOT = Path(__file__).parent
 WEIGHTS = {
-    "YOLO11s 4-class balanced (final)": ROOT / "weights" / "yolo11s_4cls_balanced.pt",
+    "YOLO11s 4-class balanced (subset)": ROOT / "weights" / "yolo11s_4cls_balanced.pt",
     "YOLO11m (final, run 2)": ROOT / "weights" / "yolo11m_final.pt",
     "YOLO11s (baseline, same config)": ROOT / "weights" / "yolo11s_baseline.pt",
 }
@@ -72,7 +72,7 @@ FUSIONS = {
         parts=[("full 1024", 1024), ("full 1280", 1280)],
         cfg=_cfg("full_dataset.json", {"t_iou": 0.65, "weights": [1, 1]}), names=NAMES4, bri="fusion_full_1024"),
     "Fusion of four 4-class YOLO11s models (4,000-image subset)": dict(
-        parts=[("YOLO11s 4-class balanced (final)", 1024), ("4cls plain 1024", 1024), ("4cls sqrt 1280", 1280), ("4cls plain 1280", 1280)],
+        parts=[("YOLO11s 4-class balanced (subset)", 1024), ("4cls plain 1024", 1024), ("4cls sqrt 1280", 1280), ("4cls plain 1280", 1280)],
         cfg=_cfg("4cls_fusion.json", {"t_iou": 0.55, "weights": [2, 1, 1, 1]}), names=NAMES4, bri="fusion4_1024"),
     "Fusion (WBF): YOLO11m + YOLO11s, 8 classes": dict(
         parts=[("YOLO11m (final, run 2)", 1024), ("YOLO11s (baseline, same config)", 1024)],

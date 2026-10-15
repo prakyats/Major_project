@@ -8,11 +8,14 @@ app_file: app.py
 pinned: false
 ---
 
-# Wood surface defect detection (YOLO11m vs YOLO11s)
+# AI-Based Wood Quality Assessment
 
-Sawn-timber line-scan images, 8 defect classes (Quartzity, Live_Knot, Marrow, Resin, Dead_Knot,
-Knot_with_crack, Knot_missing, Crack), trained on a board-level split of the Kodytek, Bodzas & Bilik (2022)
-dataset (F1000Research 10:581). Upload a board image on the first tab, or compare ground truth and
-prediction on held-out test boards on the second. Runs on CPU.
+Finds surface defects on sawn-timber line-scan board images and grades each board (A / B / C / Reject) with the
+Board Recoverability Index, with the recoverable area and an editable value estimate.
 
-VTU major project, DSCE CSBS 2026-27.
+**Default model:** weighted box fusion of two YOLO11s models (1024 and 1280 px) trained on the full Kodytek, Bodzas
+and Bilik (2022) dataset (F1000Research 10:581; 20,276 images, 407 boards), 4 classes: Live_Knot, Dead_Knot, Resin,
+Crack. Test mAP50 76.9 on the original 12 held-out boards and 81.3 on 51 further unseen boards. The 8-class
+YOLO11m / YOLO11s models from the mid-term review remain selectable. Runs on CPU.
+
+VTU major project, Dept. of CSBS, Dayananda Sagar College of Engineering, 2026-27. Guide: Mrs. Aparna H D. Team 4.
