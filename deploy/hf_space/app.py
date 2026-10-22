@@ -100,6 +100,15 @@ def bri_cfg(key):
     return (0.002, 0.006, 0.015), (0.002, 0.006, 0.015), False
 
 
+def grade_basis(dis, taus):
+    """Why this grade: the damage score against the A / B / C / Reject cut-offs fitted on the validation boards."""
+    t1, t2, t3 = taus
+    band = "A" if dis < t1 else "B" if dis < t2 else "C" if dis < t3 else "Reject"
+    share = {"A": "best ~40 %", "B": "next ~30 %", "C": "next ~20 %", "Reject": "worst ~10 %"}[band]
+    return (f"damage score **{dis:.4f}** vs cut-offs A < {t1:.4f} ≤ B < {t2:.4f} ≤ C < {t3:.4f} ≤ Reject, "
+            f"i.e. in the {share} of validation boards")
+
+
 def grade_badge(g):
     return (f"<span style='background:{GRADE_COLOURS[g]};color:#fff;padding:2px 10px;border-radius:6px;"
             f"font-weight:700'>Grade {g}</span>")
@@ -260,8 +269,9 @@ def detect(image, model_key, conf, iou, compare, size_choice, show_heat,
         value = vol_cft * g["recoverable_pct"] / 100 * float(price) * float(factor[g["grade"]])
         grade_rows.append([short, g["grade"], round(g["DIS"], 5), g["recoverable_pct"], g["coverage_pct"], g["n_defects"],
                            round(value), round(full - value)])
-        notes.append(f"**{k}**: {summarize(res['dets'])}  \n{grade_badge(g['grade'])} damage score **{g['DIS']:.4f}**, "
-                     f"recoverable **{g['recoverable_pct']:.1f}%** of the board area, estimated value **Rs {value:,.0f}** "
+        notes.append(f"**{k}**: {summarize(res['dets'])}  \n{grade_badge(g['grade'])} {grade_basis(g['DIS'], taus)}.  \n"
+                     f"BRI recoverable **{g['recoverable_pct']:.1f}%** (1 - damage score; a severity-weighted index, not physical "
+                     f"yield; defects cover {g['coverage_pct']:.1f}% of the board), estimated value **Rs {value:,.0f}** "
                      f"(Rs {full - value:,.0f} lost to defects)"
                      + ("" if calibrated else " _(grade thresholds not yet calibrated for this model)_") + "  \n"
                      f"_{res['dt']*1000:.0f} ms on CPU (inference {res['speed']['inference']:.0f} ms), run at imgsz {imgsz}_")
@@ -458,7 +468,7 @@ with gr.Blocks(title="Wood Quality AI - YOLO11 defect detection") as demo:
                 out_img5 = gr.Image(label="Third model", buttons=["fullscreen", "download"], visible=False)
                 out_img6 = gr.Image(label="Third model heatmap", buttons=["fullscreen", "download"], visible=False)
                 out_md = gr.Markdown()
-                out_grade = gr.Dataframe(headers=["model", "grade", "damage score", "recoverable %", "coverage %",
+                out_grade = gr.Dataframe(headers=["model", "grade", "damage score", "BRI recoverable % (weighted)", "defect coverage %",
                                                   "defects", "est. value (Rs)", "value lost (Rs)"],
                                          label="Quality grade (Board Recoverability Index) and value", wrap=True)
                 out_cls = gr.Dataframe(headers=["model", "class", "count", "area %", "mean conf"], label="Per-class breakdown", wrap=True)
@@ -496,7 +506,10 @@ with gr.Blocks(title="Wood Quality AI - YOLO11 defect detection") as demo:
             "distance d from the nearest side edge of the board (defects near an edge can be trimmed off). The impact "
             "map keeps the largest influence per pixel, so overlapping boxes are counted once; the damage score is its "
             "sum divided by the board area, recoverable area = 1 - damage score, and the A / B / C / Reject thresholds "
-            "are fitted on the validation boards. Severity weights are the guide's placeholders pending expert calibration."
+            "are fitted on the validation boards (about the best 40 % / next 30 % / next 20 % / worst 10 % of boards), so a "
+            "grade is relative to typical boards in the dataset. Because each defect is weighted by severity, confidence and "
+            "position, the damage score is small (0.01 is already a heavily damaged board) and the BRI recoverable % stays "
+            "high; it is an index, not the physical yield. Severity weights are the guide's placeholders pending expert calibration."
             "\n\n**Market value** = board volume x recoverable share x grade-A price x grade factor. All inputs are "
             "editable and illustrative.")
 
@@ -512,4 +525,5 @@ def _preload():
 
 if __name__ == "__main__":
     _preload()
-    demo.launch(server_name=os.environ.get("GRADIO_HOST", "127.0.0.1"), server_port=int(os.environ.get("PORT", 7860)), show_error=True, css=CSS)
+    demo.launch(server_name=os.environ.get("GRADIO_HOST", "127.0.0.1"), server_port=int(os.environ.get("PORT", 7860)), show_error=True, css=CSS,
+                share=os.environ.get("GRADIO_SHARE") == "1")   # GRADIO_SHARE=1: temporary public *.gradio.live link
