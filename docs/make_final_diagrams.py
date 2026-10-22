@@ -36,13 +36,13 @@ def methodology(out, final):
     fig = plt.figure(figsize=(12.05, 11.6), dpi=100)
     ax = fig.add_axes([0, 0, 1, 1]); ax.set_xlim(0, 1); ax.set_ylim(0, 1); ax.axis("off")
     cw, cx = 0.56, 0.22
-    box(ax, cx, 0.895, cw, 0.08, "Stage 1: Dataset preparation\n4,000-image subset, then all 20,276 line-scan images (407 boards);\n"
-        "label cleaning, board-level split (subset 52 / 17 / 12, full 280 / 76 / 51 boards)", GREEN)
+    box(ax, cx, 0.895, cw, 0.08, "Stage 1: Dataset preparation\nexpanded from 4,000 to 20,276 board images (407 boards);\n"
+        "label cleaning, board-level train / val / test split (280 / 76 / 51 boards)", GREEN)
     arrow(ax, 0.5, 0.895, 0.5, 0.865)
     box(ax, cx, 0.785, cw, 0.08, "Stage 2: Input handling & class balancing\nrectangular high-resolution input, grain-safe "
         "augmentation,\ncopy-paste balancing of rare defect classes", GREEN)
     arrow(ax, 0.5, 0.785, 0.5, 0.755)
-    box(ax, cx, 0.675, cw, 0.08, f"Stage 3: Defect detection\nYOLO11m and YOLO11s, identical recipe on Kaggle T4;\n"
+    box(ax, cx, 0.675, cw, 0.08, f"Stage 3: Defect detection\nYOLO11m and YOLO11s, identical recipe on a T4 GPU;\n"
         f"final detector: {final}", GREEN)
     arrow(ax, 0.5, 0.675, 0.5, 0.645)
     box(ax, 0.17, 0.53, 0.66, 0.115, "Stage 4: MATHEMATICAL MODEL\nClass-balancing rule  $n_c \\rightarrow \\sqrt{n_c\\, n_{max}}$;  "
@@ -82,7 +82,7 @@ def system_design(out, final, metrics):
             "Reports\nJSON per image: defects, grade, value"]
     right = ["Board images (2800 × 1024)\nKodytek et al. dataset, 8 classes",
              "Preparation + balancing scripts\nboard split, label cleaning, copy-paste balancing",
-             f"Training script (Kaggle T4)\nYOLO11m / YOLO11s, Wise-IoU option; final: {final}",
+             "Training script (GPU)\nYOLO11m / YOLO11s, Wise-IoU; final: 2 fused YOLO11s",
              "Evaluation + statistics\nsingle-shot test, bootstrap CI, Wilcoxon, kappa",
              "Detection output (+ box fusion)\nclass, box, confidence per defect"]
     ys = [0.78 - i * 0.115 for i in range(5)]
