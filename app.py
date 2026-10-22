@@ -512,4 +512,5 @@ def _preload():
 
 if __name__ == "__main__":
     _preload()
-    demo.launch(server_name=os.environ.get("GRADIO_HOST", "127.0.0.1"), server_port=int(os.environ.get("PORT", 7860)), show_error=True, css=CSS)
+    demo.launch(server_name=os.environ.get("GRADIO_HOST", "127.0.0.1"), server_port=int(os.environ.get("PORT", 7860)), show_error=True, css=CSS,
+                share=os.environ.get("GRADIO_SHARE") == "1")   # GRADIO_SHARE=1: temporary public *.gradio.live link
