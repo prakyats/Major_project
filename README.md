@@ -50,7 +50,7 @@ per-class confidence thresholds, CLAHE / denoising / sharpening (hypothesis H1 r
 
 | File | What it is |
 |---|---|
-| `Major_Project_Final_Presentation_V4.1.pptx` | Final (100 %) review deck, 34 slides (V4.0: before the full dataset) |
+| `Major_Project_Final_Presentation_V4.2.pptx` | Final (100 %) review deck, 28 slides, for 23 October 2026 |
 | `Final_Project_Report_2026-10-15.docx` / `.pdf` | Final report (10 pages): phases incl. the leakage fix, mathematical model, full dataset, BRI and its validation |
 | `Presentation_Speaker_Notes.docx`, `Major_Project_50pct_Presentation_V3.0.pptx` | 50 % review material |
 | [NOTES.md](NOTES.md) | Decision log: every run, result and deviation (sections 1-23) |

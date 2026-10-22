@@ -16,7 +16,7 @@ import deck_tools as D
 
 ROOT = Path(__file__).resolve().parent.parent
 SRC = Path(r"C:\Users\ASUS\Desktop\Major_Project\docs\Major_Project_50pct_Presentation_V3.0.pptx")
-OUT = Path(r"C:\Users\ASUS\Desktop\Major_Project\docs\Major_Project_Final_Presentation_V4.1.pptx")
+OUT = Path(r"C:\Users\ASUS\Desktop\Major_Project\docs\Major_Project_Final_Presentation_V4.2.pptx")
 FIGS = ROOT / "docs" / "final_figs"
 R = json.loads((ROOT / "docs" / "final_results.json").read_text(encoding="utf-8"))
 IN = lambda x: int(Inches(x))
@@ -75,29 +75,30 @@ def main():
     # ---------------------------------------------------------------- 2 organisation
     D.set_bullets(D.shape_by_id(S[2], 109), [
         "Abstract", "Introduction", "Literature Survey", "Problem Statement", "Objectives and Final Status",
-        "Methodology", "Dataset and Board-level Split", "System Design and Implementation", "Training Configuration and Runs",
-        "Mathematical Model: Class Balancing, Box Fusion and Wise-IoU, Recoverability Index",
-        "Results on Held-out Boards", "Full-dataset Extension (20,276 images)", "Statistical and Grading Validation", "Image Enhancement Study",
-        "Model Comparison", "Demonstration Application", "Plan of Action", "Conclusion and Future Work", "References"], size=10.5)
+        "Methodology", "Recap: Results at the 50% Review", "System Design",
+        "Feedback Received and Actions Taken", "Data Engineering and Expansion",
+        "Mathematical Model: Class Balancing, Box Fusion, Recoverability Index", "How We Arrived at the Final Model",
+        "Results: 50% Review vs Final", "Statistical and Grading Validation", "Image Enhancement Study",
+        "Demonstration Application", "Plan of Action", "Conclusion and Future Work", "References"], size=10.5)
     # ---------------------------------------------------------------- 3 abstract
     D.set_bullets(D.shape_by_id(S[3], 127), [
-        "Surface defects such as knots, cracks and resin pockets reduce the usable part of sawn timber; manual grading is slow, subjective and inconsistent.",
+        "Surface defects such as knots, cracks and resin pockets reduce the usable part of a wood board; manual grading is slow, subjective and inconsistent. The target application is high-value wood such as sandalwood.",
         "We built an AI system that detects, classifies and localises surface defects on board images and turns them into a quality grade, a recoverable-area estimate and a value estimate.",
-        "Data: 4,000 industrial line-scan images, 8 defect classes, split by physical board (52 / 17 / 12 boards), so every test board is unseen; extended to all 20,276 images (407 boards) for the final detector.",
-        "Detection: YOLO11m and YOLO11s reach 63.0 and 64.6 mAP50 over 8 classes on 12 unseen boards; YOLO11s is 2.8x faster, so the final system is built on YOLO11s.",
-        f"Mathematical model: class balancing, higher resolution and weighted box fusion of four 4-class YOLO11s models raise test mAP50 from {single4[3]:.1f} (best single model) to {F4['map50']*100:.1f} and mAP50-95 from {single4[4]:.1f} to {F4['map']*100:.1f}; 95% CI of the mAP50 gain +{st4f['map50_diff_ci'][0]:.1f} to +{st4f['map50_diff_ci'][1]:.1f}, Wilcoxon p = {st4f['wilcoxon_p']:.3f}. Retrained on the full dataset, two models fused reach {ffo['map50']:.1f} mAP50 on the same 12 test boards and {fff['map50']:.1f} on 51 unseen boards.",
-        f"Quality assessment: the guide's Board Recoverability Index, adapted to line-scan geometry, matches annotation-based grades with weighted kappa {f1(kappa) if kappa is None else f'{kappa:.2f}'} on unseen boards; a web application shows defects, grade, recoverable area and value."], size=13)
+        "At the 50% review, YOLO11m and YOLO11s reached 63.0 and 64.6 mAP50 over 8 classes on unseen boards, limited by scarce and imbalanced data.",
+        f"Revised based on the feedback received: we expanded and engineered the data (20,276 images from 407 boards, synthetic class balancing) and built a mathematical model of class balancing and weighted box fusion with board-level statistical validation.",
+        f"Result: {ffo['map50']:.1f} mAP50 on the same unseen test boards and {fff['map50']:.1f} on 51 further unseen boards (from 64.6 at mid-term); the fusion gain is significant (95% CI +{st4f['map50_diff_ci'][0]:.1f} to +{st4f['map50_diff_ci'][1]:.1f}).",
+        f"Quality assessment: the Board Recoverability Index proposed by our guide, adapted to our images, matches annotation-based grades with weighted kappa {kappa:.2f}; a web application shows defects, grade, recoverable area and value."], size=13)
     # ---------------------------------------------------------------- 4 introduction (last bullet only)
     sh = D.shape_by_id(S[4], 140)
     D.set_bullets(sh, [
-        "Manual inspection of timber depends on human graders; fatigue and inter-inspector variation make results inconsistent, and throughput limits line speed.",
+        "Manual inspection of wood depends on human graders; fatigue and inter-inspector variation make results inconsistent, and throughput limits line speed.",
         "Defects differ in severity: a live knot is cosmetic, a dead or missing knot weakens the board, a crack may make a section unusable. Grading needs the defect type and its location, not a yes/no answer.",
         "One-stage detectors of the YOLO family find and classify small objects in real time, which suits a conveyor-mounted line-scan camera.",
         "Our system returns every visible defect with class, position, size and confidence, grades each board with the Board Recoverability Index (A / B / C / Reject), and estimates its recoverable area and value."])
     # ---------------------------------------------------------------- 8 objectives
     D.set_text(D.shape_by_id(S[8], 181), "OBJECTIVES AND FINAL STATUS")
     D.set_bullets(D.shape_by_id(S[8], 188), [
-        ("Objective 1 (achieved): ", "Annotated dataset of 4,000 line-scan images, 8 classes, 9,053 boxes, split by physical board with zero overlap, then the full 20,276-image dataset (407 boards). Higher-resolution input (1280 px), CLAHE / denoising and copy-paste balancing of rare classes were all implemented and evaluated."),
+        ("Objective 1 (achieved): ", "Annotated dataset of 4,000 line-scan images, 8 classes, 9,053 boxes, split by physical board with zero overlap, expanded to 20,276 images from 407 boards. Higher-resolution input (1280 px), CLAHE / denoising and copy-paste balancing of rare classes were all implemented and evaluated."),
         ("Objective 2 (achieved): ", "Deep-learning framework for detection and localisation: reproducible preparation, balancing, training and evaluation scripts; 8-class YOLO11m / YOLO11s and 4-class YOLO11s models, each tested once on held-out boards."),
         ("Objective 3 (achieved): ", f"Recoverable-area estimation: the guide's Board Recoverability Index gives a damage score, recoverable area and grade per board; validated against annotation-based grades (weighted kappa {kappa:.2f}); market value estimated from grade." if kappa else "Recoverable-area estimation with the Board Recoverability Index (validation pending)."),
         ("Objective 4 (achieved): ", "Comparison with P, R, F1, mAP50, mAP50-95 and inference time at identical settings, plus our mathematical model: class-balancing rule, weighted box fusion, Wise-IoU loss, per-class thresholds and statistical validation.")])
@@ -199,22 +200,22 @@ def main():
             return [label, "4", "-", "-", "-", "pending", "pending", "-", params]
         a_ = d["ALL"]; return [label, "4", f1(a_[0]), f1(a_[1]), f1(a_[2]), f1(a_[3]), f1(a_[4]), "11.7", params]
     top = [["Model", "Classes", "P", "R", "F1", "mAP50", "mAP50-95", "ms / img (T4)", "Params"],
-           ["YOLO11m", "8"] + [f1(x) for x in T8["YOLO11m"]["ALL"]] + ["33.2", "20.0 M"],
-           ["YOLO11s", "8"] + [f1(x) for x in T8["YOLO11s"]["ALL"]] + ["11.7", "9.4 M"],
-           ["Fusion (WBF) YOLO11m + YOLO11s", "8", "-", "-", "-", f1(f8["map50"] * 100), f1(f8["map"] * 100), "44.9", "29.4 M"],
-           row4("YOLO11s, no balancing", "plain_1024"), row4("YOLO11s, partial balance (subset single)", "sqrt_1024"),
-           row4("YOLO11s, partial balance, 1280 px", "sqrt_1280")]
+           ["50% review: YOLO11m", "8"] + [f1(x) for x in T8["YOLO11m"]["ALL"]] + ["33.2", "20.0 M"],
+           ["50% review: YOLO11s", "8"] + [f1(x) for x in T8["YOLO11s"]["ALL"]] + ["11.7", "9.4 M"],
+           ["50% review YOLO11s, scored on the 4 classes", "4", "-", "-", "-", "69.6", "32.9", "11.7", "9.4 M"],
+           row4("YOLO11s 4 classes, partial balance", "sqrt_1024")]
     if fus4 and fus4.get("adopted"):
         x = fus4["test"]["fused"]
-        top.append(["Fusion (WBF) of four 4-class models (subset)", "4", "-", "-", "-", f1(x["map50"] * 100), f1(x["map"] * 100), "~60", "37.7 M"])
-    top.append(["Fusion of two full-dataset models (final)", "4", "-", "-", "-", f1(ffo["map50"]), f1(ffo["map"]), "~30", "18.8 M"])
+        top.append(["Mathematical model: fusion of four 4-class models", "4", "-", "-", "-", f1(x["map50"] * 100), f1(x["map"] * 100), "~60", "37.7 M"])
+    top.append(["Final: fusion of two models, expanded data", "4", "-", "-", "-", f1(ffo["map50"]), f1(ffo["map"]), "~30", "18.8 M"])
+    top.append(["Final, on 51 further unseen boards", "4", "-", "-", "-", f1(fff["map50"]), f1(fff["map"]), "~30", "18.8 M"])
     t_top, t_cls = tbl(S[17])
     D.fill_table(t_top, top, col_widths=[2.6, 0.6, 0.6, 0.6, 0.6, 0.7, 0.8, 0.9, 0.7], size=8.5)
     D.set_row_heights(t_top, IN(0.24))
     fd = R["test4"][fin.get("single_key", "sqrt_1024")]
     base4 = {"Live_Knot": T8["YOLO11s"]["Live_Knot"], "Dead_Knot": T8["YOLO11s"]["Dead_Knot"],
              "Resin": T8["YOLO11s"]["Resin"], "Crack": T8["YOLO11s"]["Crack"]}
-    crow = [["Class (test mAP50)", "Test boxes", "8-class YOLO11s", "Best single 4-class (P / R)", "Single mAP50", "Final detector mAP50"]]
+    crow = [["Class (test mAP50)", "Test boxes", "50% review (YOLO11s)", "Best single 4-class (P / R)", "Single mAP50", "Final detector mAP50"]]
     nbox = {"Live_Knot": 406, "Dead_Knot": 343, "Resin": 69, "Crack": 95}
     for c in ["Dead_Knot", "Live_Knot", "Resin", "Crack"]:
         crow.append([c, str(nbox[c]), f1(base4[c][3]), f"{f1(fd[c][0])} / {f1(fd[c][1])}", f1(fd[c][3]), f1(ffo["ap50"][c])])
@@ -223,8 +224,8 @@ def main():
     t_cls.top = t_top.top + IN(0.24) * len(top) + IN(0.25)
     D.set_row_heights(t_cls, IN(0.24))
     D.set_bullets(D.shape_by_id(S[17], 301), [
-        "Each model evaluated exactly once on boards never used for training, validation or any choice. 8-class and 4-class rows are not directly comparable: on the same four classes the 8-class YOLO11s scores 69.6 mAP50.",
-        f"On the subset, only fusion beat the best single model (+{st4f['map50_diff_ci'][0]:.1f} to +{st4f['map50_diff_ci'][1]:.1f} mAP50, 95% CI). The final detector, trained on the full dataset, adds {ffo['map50'] - sub_fus['map50']:+.1f} on the same boards (CI {stfu['map50_diff_ci'][0]:+.1f} to {stfu['map50_diff_ci'][1]:+.1f}) and scores {fff['map50']:.1f} on 51 unseen boards."], size=10)
+        f"Same 12 unseen test boards throughout: mAP50 64.6 at the 50% review (69.6 on the 4 main classes) -> {ffo['map50']:.1f} now; Crack 53.0 -> {ffo['ap50']['Crack']:.1f}, Resin 60.4 -> {ffo['ap50']['Resin']:.1f}.",
+        f"Before the data expansion, only fusion beat the best single model (+{st4f['map50_diff_ci'][0]:.1f} to +{st4f['map50_diff_ci'][1]:.1f} mAP50, 95% CI). The final detector, trained on the expanded data, adds {ffo['map50'] - sub_fus['map50']:+.1f} on the same boards (CI {stfu['map50_diff_ci'][0]:+.1f} to {stfu['map50_diff_ci'][1]:+.1f}) and scores {fff['map50']:.1f} on 51 unseen boards."], size=10)
     D.shape_by_id(S[17], 301).top = t_cls.top + IN(0.24) * 6 + IN(0.2)
 
     # ================================================================ new slides
@@ -239,7 +240,7 @@ def main():
     rows.append(["Imbalance max : min", "9.5 : 1", "1.06 : 1", "3.1 : 1"])
     t = tbl(s)[0]; t.width = IN(5.2); D.fill_table(t, rows, col_widths=[1.3, 1.1, 1.2, 1.6], size=10)
     t.top = IN(1.0); D.set_row_heights(t, IN(0.3))
-    tx = D.shape_by_text(s, "Each model evaluated")
+    tx = D.shape_by_text(s, "Same 12 unseen test boards")
     D.set_bullets(tx, [
         ("Rule: ", "target boxes per class n_c* = n_max (full) or n_c* = sqrt(n_c x n_max) (partial, the repeat-factor rule of LVIS [15], same idea as the effective number of samples [14])."),
         ("Synthesis: ", "real defect crops cut from training boards and pasted onto defect-free training boards (2-5 per image), only inside the board mask, no rotation, Poisson or feathered blending [16]; training split only."),
@@ -267,11 +268,11 @@ def main():
                      f"val {c['val_map50']*100:.1f} vs best single {max(fus4['val_single_map50'])*100:.1f}; "
                      + (f"adopted, test {x['map50']*100:.1f} / {x['map']*100:.1f}" if fus4.get("adopted") else "not adopted (rule fixed before running)")])
     ch = FU["chosen"]
-    rows.append(["Fusion of full-dataset models", f"IoU {ch['t_iou']}, weights {ch['weights']}",
+    rows.append(["Fusion of the expanded-data models", f"IoU {ch['t_iou']}, weights {ch['weights']}",
                  f"val {ch['val_full_map50']*100:.1f} (full val); adopted, test {ffo['map50']:.1f} / {ffo['map']:.1f} (12 boards), {fff['map50']:.1f} / {fff['map']:.1f} (51 boards)"])
     t = tbl(s)[0]; D.fill_table(t, rows, col_widths=[1.4, 3.2, 3.6], size=9)
     t.top = IN(1.0); D.set_row_heights(t, IN(0.45))
-    D.set_bullets(D.shape_by_text(s, "Each model evaluated"), [
+    D.set_bullets(D.shape_by_text(s, "Same 12 unseen test boards"), [
         f"Fusion averages the boxes of several detectors weighted by confidence and lowers the confidence of boxes only one model finds. Fusing four 4-class YOLO11s models (1024 and 1280 px, with and without balancing) raised test mAP50 from {single4[3]:.1f} to {F4['map50']*100:.1f}.",
         "Thresholds tuned per class over-fit the few validation boxes of Resin and Crack, so one global threshold is kept.",
         "Every setting was chosen on the 17 validation boards; the 12 test boards were scored once."], size=10.5)
@@ -299,10 +300,10 @@ def main():
     D.set_text(D.shape_by_text(s, "RESULTS: HELD-OUT TEST"), "STATISTICAL VALIDATION")
     ta, tb_ = tbl(s)
     rows = [["Comparison (test, 12 boards)", "mAP50 diff", "95% CI (board bootstrap)", "Boards better / worse", "Wilcoxon p"],
-            ["Final detector (full data) - subset fusion", f"{ffo['map50'] - sub_fus['map50']:+.1f}", f"[{stfu['map50_diff_ci'][0]:+.1f}, {stfu['map50_diff_ci'][1]:+.1f}]",
+            ["Final detector (expanded data) - four-model fusion", f"{ffo['map50'] - sub_fus['map50']:+.1f}", f"[{stfu['map50_diff_ci'][0]:+.1f}, {stfu['map50_diff_ci'][1]:+.1f}]",
              f"{stfu['boards_better']} / {stfu['boards_worse']}", f"{stfu['wilcoxon_p']:.2f}"]]
     if fus4:
-        rows.append(["Subset fusion (4 cls) - best single 4-class model", f"{(F4['map50'] - fus4['test']['singles'][fus4['best_single_on_val']]['map50'])*100:+.1f}",
+        rows.append(["Four-model fusion (4 cls) - best single 4-class model", f"{(F4['map50'] - fus4['test']['singles'][fus4['best_single_on_val']]['map50'])*100:+.1f}",
                      f"[{st4f['map50_diff_ci'][0]:+.1f}, {st4f['map50_diff_ci'][1]:+.1f}]", f"{st4f['boards_better']} / {st4f['boards_worse']}", f"{st4f['wilcoxon_p']:.3f}"])
     rows.append(["Fusion (YOLO11m + YOLO11s) - YOLO11s, mAP50", f"{(f8['map50'] - fus8['test']['singles'][fus8['best_single_on_val']]['map50'])*100:+.1f}",
                  f"[{st8['map50_diff_ci'][0]:+.1f}, {st8['map50_diff_ci'][1]:+.1f}]", f"{st8['boards_better']} / {st8['boards_worse']}", f"{st8['wilcoxon_p']:.2f}"])
@@ -321,9 +322,9 @@ def main():
         rows += [["Val mAP50, seeds 42 / 1 / 2", "pending (Kaggle)"]]
     D.fill_table(tb_, rows, col_widths=[3.0, 2.0], size=9); tb_.width = IN(5.0)
     tb_.top = ta.top + IN(0.28) * len(ta.table.rows) + IN(0.3); D.set_row_heights(tb_, IN(0.28))
-    D.set_bullets(D.shape_by_text(s, "Each model evaluated"), [
+    D.set_bullets(D.shape_by_text(s, "Same 12 unseen test boards"), [
         "Board-level bootstrap: the 12 test boards are resampled 1,000 times with replacement, so the interval reflects board-to-board variation [20]; exact Wilcoxon signed-rank test on per-board AP50 differences [21].",
-        "Only the fusion and full-dataset gains have intervals that exclude zero; the subset fusion is also significant by the Wilcoxon test. Differences of 2-3 mAP50 points between single models are within the noise of a 12-board test set."], size=10)
+        "Only the fusion and data-expansion gains have intervals that exclude zero; the four-model fusion is also significant by the Wilcoxon test. Differences of 2-3 mAP50 points between single models are within the noise of a 12-board test set."], size=10)
     D.shape_by_text(s, "Board-level bootstrap").top = tb_.top + IN(1.1)
 
     # GRADING (clone of slide 17)
@@ -343,7 +344,7 @@ def main():
         rows = [["Reference \\ Model", "A", "B", "C", "Reject"]] + [[f"{G[i]} ({sum(cm[i])})"] + [str(x) for x in cm[i]] for i in range(4)]
         D.fill_table(tb_, rows, col_widths=[1.6, 0.8, 0.8, 0.8, 0.8], size=9.5); tb_.width = IN(4.8)
         tb_.top = ta.top + IN(0.28) * 6 + IN(0.3); D.set_row_heights(tb_, IN(0.28))
-        D.set_bullets(D.shape_by_text(s, "Each model evaluated"), [
+        D.set_bullets(D.shape_by_text(s, "Same 12 unseen test boards"), [
             f"Reference grade = BRI on the annotators' boxes, thresholds at the 40th / 70th / 90th percentiles of validation damage scores ({', '.join(f'{x:.4f}' for x in bri['tau_reference'])}).",
             f"Model grade = BRI on the detector's boxes, thresholds fitted on validation with the guide's calibration ({', '.join(f'{x:.4f}' for x in bri['tau_detector'])}); test boards never used for fitting.",
             "Next step agreed with the guide: blind expert grading of 30-50 boards to calibrate severity weights and thresholds."], size=10)
@@ -359,7 +360,7 @@ def main():
             row = enh["table"][c]; rows.append([lab] + [f1(row[e]["map50"] * 100) for e in E])
         t = tbl(s)[0]; D.fill_table(t, rows, col_widths=[2.0, 1, 1, 1, 1], size=10); t.top = IN(1.0); t.width = IN(6.0)
         D.set_row_heights(t, IN(0.3))
-    D.set_bullets(D.shape_by_text(s, "Each model evaluated"), [
+    D.set_bullets(D.shape_by_text(s, "Same 12 unseen test boards"), [
         ("H1 rejected for raw images: ", "CLAHE lowers mAP50 significantly in 5 of 6 conditions (Wilcoxon p <= 0.006); sharpening gives no significant gain."),
         ("Denoising helps only on noisy images: ", "+3.2 to +7.2 mAP50 (95% CI), p = 0.006; recommended only for a noisy camera."),
         ("Imaging conditions matter more than enhancement: ", "low light costs about 25 points, so controlled lighting is the main requirement for deployment.")], size=10.5)
@@ -371,10 +372,10 @@ def main():
     D.set_bullets(D.shape_by_text(s, "Dataset preparation."), [
         ("Clean evaluation: ", "a board-level split and rectangular high-resolution input give a reproducible baseline of 63-65 mAP50 over 8 classes on 12 unseen boards; YOLO11s matches YOLO11m at 2.8x the speed."),
         ("Mathematical model: ", f"weighted box fusion of four balanced / high-resolution YOLO11s models raises test mAP50 from {single4[3]:.1f} to {F4['map50']*100:.1f} (significant, 10 of 12 boards better); balancing or 1280 px alone, Wise-IoU and per-class thresholds gave no significant gain."),
-        ("More data: ", f"the same recipe on all 20,276 images lifts the final detector to {ffo['map50']:.1f} mAP50 on the original test boards (+{ffo['map50'] - sub_fus['map50']:.1f}, CI excludes zero) and {fff['map50']:.1f} / {fff['map']:.1f} on 51 unseen boards; Crack reaches {fff['ap50']['Crack']:.1f}."),
+        ("Data engineering: ", f"the same recipe on the expanded 20,276-image data lifts the final detector to {ffo['map50']:.1f} mAP50 on the original test boards (+{ffo['map50'] - sub_fus['map50']:.1f}, CI excludes zero) and {fff['map50']:.1f} / {fff['map']:.1f} on 51 unseen boards; Crack reaches {fff['ap50']['Crack']:.1f}."),
         ("Quality assessment: ", f"the guide's Board Recoverability Index, adapted to line-scan geometry, reproduces annotation-based grades (weighted kappa {kappa:.2f} per image with the deployed detector) and drives a market-value estimate."),
         ("Deliverable: ", "a CPU web application that shows defects, grade, recoverable area and value for an uploaded board image."),
-        ("Future work: ", "blind expert grading to calibrate severity weights and thresholds; k-fold validation over boards; more rare-class data; segmentation masks for tighter defect area; CondConv / BiFormer (full CWB) architecture; plywood images and field cameras.")], size=10.5)
+        ("Future work: ", "sandalwood: collect and label sandalwood board images and retrain (the pipeline is species-independent); blind expert grading to calibrate severity weights and thresholds; k-fold validation over boards; more rare-class data; segmentation masks for tighter defect area; CondConv / BiFormer (full CWB) architecture; plywood images and field cameras.")], size=10.5)
 
     # REFERENCES (contd.) (clone of slide 24)
     s = D.clone_slide(prs, S[24]); new["refs"] = s
@@ -397,52 +398,108 @@ def main():
     # ---------------------------------------------------------------- demo app slide (21): text; screenshots if present
     D.set_text(D.shape_by_id(S[21], 316), "DEMONSTRATION APPLICATION")
     D.set_bullets(D.shape_by_id(S[21], 326), [
-        ("Detect: ", "upload a board image, choose a model or run all; colour-coded boxes, heatmap, per-class counts and area."),
-        ("Grade: ", "Board Recoverability Index grade A / B / C / Reject, damage score, recoverable area; editable market-value estimate."),
-        ("Test boards: ", "annotators' boxes and grade next to the model's on the 12 unseen boards."),
-        ("Deployment: ", "runs on a CPU laptop (0.2-0.6 s per image); JSON report per image.")], size=10)
+        ("Detect: ", "upload a board image; the final detector (fusion of two models) draws colour-coded boxes with class and confidence; defect heatmap; per-class counts and area."),
+        ("Grade: ", "Board Recoverability Index grade A / B / C / Reject with the damage score and the cut-offs it is compared to; recoverable area."),
+        ("Compare: ", "on the unseen test boards, the annotators' boxes and grade are shown next to the model's."),
+        ("Value (add-on): ", "illustrative estimate = volume x recoverable share x grade-A price x grade factor; all inputs editable."),
+        ("Report and deployment: ", "downloadable JSON report per image; runs on a laptop CPU, about 0.5 s per image; earlier models selectable for comparison.")], size=10.5)
+    for sh in [x for x in S[21].shapes if x.shape_type == 13 and x.width > IN(3)] + [D.shape_by_id(S[21], 325)]:
+        D.remove_shape(sh)
+    tb = D.shape_by_id(S[21], 326); tb.left, tb.top, tb.width, tb.height = IN(0.4), IN(1.0), IN(8.3), IN(3.4)
+    tb = D.shape_by_id(S[21], 327); tb.left, tb.top, tb.width = IN(0.4), IN(4.6), IN(8.3)
+    tb = D.shape_by_id(S[21], 328); tb.left, tb.top, tb.width = IN(0.4), IN(5.3), IN(8.3)
     D.set_bullets(D.shape_by_id(S[21], 327), [
         ("Validated components: ", "detection (single-shot test), grading (weighted kappa), enhancement (study on validation).")], size=10)
     D.set_bullets(D.shape_by_id(S[21], 328), [
-        "Limitations: 12-board original test set (51 boards on full data); severity weights and grade thresholds await expert calibration; trained on controlled line-scan imagery."], size=9.5)
-    shots = [ROOT / "docs" / "final_figs" / "app_detect.png", ROOT / "docs" / "final_figs" / "app_grade.png"]
-    pics = [x for x in S[21].shapes if x.shape_type == 13 and x.width > IN(3)]
-    for pic, shot in zip(pics, shots):
-        if shot.exists():
-            D.replace_picture(S[21], pic, shot)
+        "Limitations: 12-board original test set (plus 51 boards on the expanded data); severity weights and grade thresholds await expert calibration; trained on controlled line-scan imagery."], size=9.5)
 
     s = D.clone_slide(prs, S[17]); new["full"] = s
-    D.set_text(D.shape_by_text(s, "RESULTS: HELD-OUT TEST"), "FULL-DATASET EXTENSION")
+    D.set_text(D.shape_by_text(s, "RESULTS: HELD-OUT TEST"), "DATA ENGINEERING AND EXPANSION")
     ta, tb_ = tbl(s)
     bs, bf = R["balance"]["train_sqrt"], R["balance_full"]["train_sqrt"]
-    rows = [["", "4,000-image subset", "Full dataset [12]"],
-            ["Images / boards", "4,000 / 81", "20,276 / 407"],
-            ["Boards train / val / test", "52 / 17 / 12", "280 / 76 / 51 (our 81 keep their split)"],
-            ["4-class training boxes after partial balance", f"{sum(bs.values()):,}", f"{sum(bf.values()):,}"],
-            ["Crack training boxes", f"{bs['Crack']:,}", f"{bf['Crack']:,}"]]
+    rows = [["", "50% review", "Final"],
+            ["Images / physical boards", "4,000 / 81", "20,276 / 407 (complete industrial release [12])"],
+            ["Boards train / val / test", "52 / 17 / 12", "280 / 76 / 51 (original test boards kept fixed)"],
+            ["4-class training boxes incl. our synthetic copy-paste data", f"{sum(bs.values()):,}", f"{sum(bf.values()):,}"],
+            ["Crack training boxes (rarest, most severe)", f"{bs['Crack']:,}", f"{bf['Crack']:,}"]]
     D.fill_table(ta, rows, col_widths=[2.6, 1.7, 2.9], size=9); ta.width = IN(7.2); D.set_row_heights(ta, IN(0.26))
     V = FU["val_orig"]
     def mm(x):
         return f"{x['map50']:.1f} / {x['map']:.1f}"
-    rows = [["mAP50 / mAP50-95", "Val, 714 original images", "Test, 469 original images", "Test, full split (2,488)"],
-            ["Four-model fusion, subset (previous)", "{:.1f} / {:.1f}".format(*V["deployed_fusion"]), mm(sub_fus), "-"],
-            ["YOLO11s full data, 1024 px", "{:.1f} / {:.1f}".format(*V["full_1024"]), mm(FT["full_1024"]["orig"]), mm(FT["full_1024"]["full"])],
-            ["YOLO11s full data, 1280 px", "{:.1f} / {:.1f}".format(*V["full_1280"]), mm(FT["full_1280"]["orig"]), mm(FT["full_1280"]["full"])],
+    rows = [["mAP50 / mAP50-95", "Val, 714 original images", "Test, 469 original images", "Test, 51 further boards (2,488)"],
+            ["Four-model fusion (before expansion)", "{:.1f} / {:.1f}".format(*V["deployed_fusion"]), mm(sub_fus), "-"],
+            ["YOLO11s expanded data, 1024 px", "{:.1f} / {:.1f}".format(*V["full_1024"]), mm(FT["full_1024"]["orig"]), mm(FT["full_1024"]["full"])],
+            ["YOLO11s expanded data, 1280 px", "{:.1f} / {:.1f}".format(*V["full_1280"]), mm(FT["full_1280"]["orig"]), mm(FT["full_1280"]["full"])],
             ["Fusion of the two (final detector)", "{:.1f} / {:.1f}".format(*V["full_fusion"]), mm(ffo), mm(fff)]]
     D.fill_table(tb_, rows, col_widths=[2.5, 1.6, 1.6, 1.6], size=9, bold_rows=(4,)); tb_.width = IN(7.3)
     tb_.top = ta.top + IN(0.26) * 5 + IN(0.25); D.set_row_heights(tb_, IN(0.26))
-    tx = D.shape_by_text(s, "Each model evaluated")
+    tx = D.shape_by_text(s, "Same 12 unseen test boards")
     D.set_bullets(tx, [
-        ("Rule fixed before training: ", f"replace the system only if mAP50 on the original 714 validation images exceeds {V['deployed_fusion'][0]:.1f}; met with {V['full_fusion'][0]:.1f}."),
-        ("Same test boards: ", f"{ffo['map50'] - sub_fus['map50']:+.1f} mAP50 over the subset fusion (95% CI {stfu['map50_diff_ci'][0]:+.1f} to {stfu['map50_diff_ci'][1]:+.1f}), with 2 models instead of 4."),
-        ("Per class, full test: ", ", ".join(f"{c} {fff['ap50'][c]:.1f}" for c in ["Live_Knot", "Dead_Knot", "Resin", "Crack"]) + " AP50."),
-        ("Data check: ", "images from the Kaggle mirror of [12] (43,974 boxes, identical labels on our 4,000 images within 1 px).")], size=10)
+        ("Our data work: ", "verified the copy we trained on against the original archive (43,974 boxes identical), fixed label-format errors, removed zero-size boxes, generated grain-aware synthetic defects inside the board mask, and photographed wood surfaces on campus for real-world testing."),
+        ("Why: ", "rare classes limited accuracy at mid-term; sandalwood, the target, has no public labelled dataset, so the method is built to be species-independent."),
+        ("Effect: ", f"{ffo['map50'] - sub_fus['map50']:+.1f} mAP50 on the same test boards (95% CI {stfu['map50_diff_ci'][0]:+.1f} to {stfu['map50_diff_ci'][1]:+.1f}) with 2 models instead of 4; rule fixed before training ({V['full_fusion'][0]:.1f} > {V['deployed_fusion'][0]:.1f} on validation).")], size=10)
     tx.top = tb_.top + IN(0.26) * 5 + IN(0.2)
 
+    # RECAP of the 50 % review (V3 slide 20 keeps its comparison table and confusion matrix)
+    D.set_text(D.shape_by_id(S[20], 305), "RECAP: RESULTS AT THE 50% REVIEW")
+    D.set_bullets(D.shape_by_id(S[20], 315), [
+        ("Clean evaluation: ", "split by physical board (52 / 17 / 12 boards, zero overlap); the earlier 62.2 was inflated by boards shared between training and test."),
+        ("Input: ", "rectangular 1024-px input instead of 640 x 640 squares (63 % padding removed), grain-safe augmentation."),
+        ("Result: ", "YOLO11m and YOLO11s tied at 63-65 mAP50 over 8 classes; YOLO11s is 2.8x faster."),
+        ("Conclusion at 50 %: ", "model size is not the bottleneck; scarce and imbalanced data is. This set the plan for the second half.")], size=10)
+
+    # FEEDBACK AND ACTIONS (one table + text)
+    s = one_table_slide(prs, S[17]); new["feedback"] = s
+    D.set_text(D.shape_by_text(s, "RESULTS: HELD-OUT TEST"), "FEEDBACK RECEIVED AND ACTIONS TAKEN")
+    rows = [["Feedback at the 50% review", "What we did", "Outcome"],
+            ["Improve accuracy with a mathematical model", "Class-balancing rule, weighted box fusion, Wise-IoU, per-class thresholds, statistical tests", f"Fusion adopted: +{st4f['map50_diff_ci'][0]:.1f} to +{st4f['map50_diff_ci'][1]:.1f} mAP50 (95% CI)"],
+            ["Rare defect classes have too little data", "Expanded to 20,276 images from 407 boards; synthetic copy-paste balancing", f"Crack training boxes 306 -> {R['balance_full']['train_sqrt']['Crack']:,}"],
+            ["Quality grade, not just detection", "Implemented the guide's Board Recoverability Index, adapted and validated", f"Weighted kappa {kappa:.2f}"],
+            ["Higher resolution, enhancement, CWB-style loss", "1280-px models, CLAHE / denoise / sharpen study, Wise-IoU v3", "Tested with intervals; kept only what helped"],
+            ["Show that results are reliable", "Board-level bootstrap and Wilcoxon tests; multi-seed runs; single-shot tests", "Every claim has a confidence interval"],
+            ["Usable end product", "Web application with grade, recoverable area, value estimate and report", "Runs on a laptop CPU, ~0.5 s per image"]]
+    t = tbl(s)[0]; D.fill_table(t, rows, col_widths=[2.3, 3.6, 2.6], size=9); t.top = IN(1.0); D.set_row_heights(t, IN(0.42))
+    tx = D.shape_by_text(s, "Same 12 unseen test boards")
+    D.set_bullets(tx, ["Feedback came from the guide and the review panel; every item was implemented and measured on boards never used for training or for any choice of settings."], size=10.5)
+    tx.top = IN(4.6)
+
+    # HOW WE ARRIVED AT THE FINAL MODEL (one table + text)
+    s = one_table_slide(prs, S[17]); new["journey"] = s
+    D.set_text(D.shape_by_text(s, "RESULTS: HELD-OUT TEST"), "HOW WE ARRIVED AT THE FINAL MODEL")
+    V = FU["val_orig"]
+    def vv(k):
+        v = R["val4"].get(k); return f1(v["ALL"][3]) if v else "-"
+    rows = [["Step (YOLO11s unless stated)", "Val mAP50", "Test mAP50", "Decision and reason"],
+            ["8 classes, YOLO11m vs YOLO11s (50% review)", "65.7 / 65.3", "63.0 / 64.6", "Tied: capacity is not the bottleneck"],
+            ["Fusion of YOLO11m + YOLO11s, 8 classes", "-", f1(f8["map50"] * 100), "mAP50-95 +2.4 (significant), still limited by rare classes"],
+            ["4 main classes, no balancing", vv("plain_1024"), f1(R["test4"]["plain_1024"]["ALL"][3]), "Fair baseline for 4 classes: 69.6 (8-class model)"],
+            ["+ full balance 1:1", vv("full_1024"), "not tested", "Worse on validation: cracks pasted up to 17 times"],
+            ["+ partial balance sqrt(n_c n_max)", vv("sqrt_1024"), f1(R["test4"]["sqrt_1024"]["ALL"][3]), "Best single on validation; kept as fusion member"],
+            ["+ 1280 px input", vv("sqrt_1280"), f1(R["test4"]["sqrt_1280"]["ALL"][3]), "Not better alone; adds diversity for fusion"],
+            ["+ Wise-IoU v3 loss / 3 seeds", (f"{[v for k, v in wi['val_map50'].items() if 'wiou' in k][0]:.1f}" if wi else "-"), "not tested", "Within seed spread 0.8: not adopted"],
+            ["Fusion of four 4-class models", f1(fus4["chosen"]["val_map50"] * 100), f1(F4["map50"] * 100), "Significant gain: adopted"],
+            ["Same recipe on the expanded data, fused (final)", f"{V['full_fusion'][0]:.1f}", f1(ffo["map50"]), f"Rule {V['deployed_fusion'][0]:.1f} on val beaten: final, 2 models"]]
+    t = tbl(s)[0]; D.fill_table(t, rows, col_widths=[2.9, 1.0, 1.0, 3.4], size=8.5, bold_rows=(len(rows) - 1,)); t.top = IN(0.95); D.set_row_heights(t, IN(0.3))
+    tx = D.shape_by_text(s, "Same 12 unseen test boards")
+    D.set_bullets(tx, [
+        "Every decision was taken on validation boards by a rule written down before training; test boards were scored once per candidate.",
+        "What made the final model: balancing and higher resolution give diverse members, fusion combines them, and more data lifts every member."], size=10)
+    tx.top = IN(4.25)
+
     # ---------------------------------------------------------------- order
-    order = [S[1], S[2], S[3], S[4], S[5], S[6], S[7], S[8], S[9], S[10], S[11], S[12], S[13], S[14], S[15],
-             new["mm1"], new["mm2"], new["mm3"], S[17], new["full"], new["stats"], new["grading"], new["enh"], S[20], S[18], S[19],
-             S[21], S[22], S[16], new["concl"], S[23], S[24], new["refs"], S[25]]
+    D.set_text(D.shape_by_text(S[17], "RESULTS: HELD-OUT TEST"), "RESULTS: 50% REVIEW vs FINAL")
+    for sl in (S[5], S[6]):                    # literature tables: say "wood", not "timber"
+        for sh in [x for x in sl.shapes if x.has_table]:
+            for row in sh.table.rows:
+                for c in row.cells:
+                    for para_ in c.text_frame.paragraphs:
+                        for r in para_.runs:
+                            r.text = r.text.replace("timber", "wood").replace("Timber", "Wood")
+    order = [S[1], S[2], S[3], S[4], S[5], S[6], S[7], S[8], S[9], S[20], S[14],
+             new["feedback"], new["full"], new["mm1"], new["mm2"], new["journey"], new["mm3"], S[17], new["stats"], new["grading"],
+             new["enh"], S[21], S[16], new["concl"], S[23], S[24], new["refs"], S[25]]
+    for sl in [sl for sl in list(prs.slides) if sl.part not in {x.part for x in order}]:
+        D.delete_slide(prs, sl)
     for i, sl in enumerate(order):
         D.move_slide(prs, sl, i)
     prs.save(str(OUT))
