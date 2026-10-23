@@ -16,7 +16,7 @@ from docx.shared import Cm, Pt, RGBColor
 
 ROOT = Path(__file__).resolve().parent.parent
 TEMPLATE = Path(r"C:\Users\ASUS\Desktop\Project   Phase-I Report Template.docx")
-OUT = Path(r"C:\Users\ASUS\Desktop\Major_Project\docs\Major_Project_Phase-I_Report_Draft.docx")
+OUT = Path(r"C:\Users\ASUS\Desktop\Major_Project\docs\Major_Project_Phase-I_Report_Draft_v2.docx")
 R = json.loads((ROOT / "docs" / "final_results.json").read_text(encoding="utf-8"))
 FIGS = ROOT / "docs" / "final_figs"; RFIGS = ROOT / "docs" / "report_figs"
 TITLE = "AI-Based Wood Quality Assessment"
@@ -140,7 +140,7 @@ def fmt(run, size=12, bold=False, italic=False, mono=False):
     return run
 
 
-def para(text="", lead=None, size=12, align=WD_ALIGN_PARAGRAPH.JUSTIFY, italic=False, space_after=6, ls=1.5, indent=None):
+def para(text="", lead=None, size=12, align=WD_ALIGN_PARAGRAPH.JUSTIFY, italic=False, space_after=6, ls=1.15, indent=None):
     p = doc.add_paragraph()
     if lead:
         fmt(p.add_run(lead), size, bold=True)
@@ -165,9 +165,8 @@ def page_break():
 
 
 def chapter(n, title, first=False):
-    if not first:
-        page_break()
     p = para("", align=WD_ALIGN_PARAGRAPH.CENTER, space_after=2)
+    p.paragraph_format.page_break_before = not first
     fmt(p.add_run(f"CHAPTER {n}"), 16, bold=True)
     p = para("", align=WD_ALIGN_PARAGRAPH.CENTER, space_after=14)
     fmt(p.add_run(title.upper()), 16, bold=True)
@@ -188,8 +187,8 @@ def section(num, title, level=2):
 
 
 def unnumbered(title):
-    page_break()
     p = para("", align=WD_ALIGN_PARAGRAPH.CENTER, space_after=12)
+    p.paragraph_format.page_break_before = True
     fmt(p.add_run(title), 16, bold=True)
     TOC.append((1, title, title))
 
@@ -254,392 +253,191 @@ def p1(x):
 
 
 # ======================================================================= CHAPTER 1
-chapter(1, "Introduction")
+chapter(1, "Introduction", first=True)
 section("1.1", "Overview")
-para("Manual inspection of wood depends on human graders; fatigue and inter-inspector variation make results inconsistent, "
-     "and throughput limits line speed. Defects differ in severity: a live knot is cosmetic, a dead or missing knot weakens the "
-     "board, and a crack may make a section unusable. Grading therefore needs the defect type and its location, not a yes/no answer.")
-para("One-stage detectors of the YOLO family find and classify small objects in real time, which suits a conveyor-mounted "
-     "line-scan camera. Our system returns every visible defect with class, position, size and confidence, grades each board "
-     "with the Board Recoverability Index (A / B / C / Reject), and estimates its recoverable area and value.")
+para("Manual inspection of wood depends on human graders, so results are inconsistent and throughput limits line speed. "
+     "Our system uses YOLO11, a one-stage real-time detector, to return every "
+     "visible defect with class, position, size and confidence, grades each board with the Board Recoverability Index "
+     "(A / B / C / Reject), and estimates its recoverable area and value.")
 section("1.2", "Problem Statement")
 para("Manual wood quality inspection is time-consuming and subjective, and existing AI approaches mostly stop at detecting "
      "defects without a leakage-free evaluation or a path to usable-area estimation; this project therefore aims to develop an "
      "AI-based computer-vision system that detects, classifies and localises visible surface defects on wooden boards, evaluates "
      "the detector on boards it has never seen, and uses the detections to estimate the recoverable portion of each board.")
 section("1.3", "Objectives")
-for lead, txt in [
-        ("Objective 1: ", "Annotated dataset of 4,000 line-scan images, 8 classes, 9,053 boxes, split by physical board with zero "
-                          "overlap, expanded to 20,276 images from 407 boards. Higher-resolution input (1280 px), CLAHE / denoising "
-                          "and copy-paste balancing of rare classes implemented and evaluated."),
-        ("Objective 2: ", "Deep-learning framework for detection and localisation: reproducible preparation, balancing, training "
-                          "and evaluation scripts; 8-class YOLO11m / YOLO11s and 4-class YOLO11s models, each tested once on held-out boards."),
-        ("Objective 3: ", "Recoverable-area estimation: the guide's Board Recoverability Index gives a damage score, recoverable "
-                          "area and grade per board, validated against annotation-based grades; market value estimated from grade."),
-        ("Objective 4: ", "Comparison with P, R, F1, mAP50, mAP50-95 and inference time at identical settings, plus a mathematical "
-                          "model: class-balancing rule, weighted box fusion, Wise-IoU loss, per-class thresholds and statistical validation.")]:
-    bullet(txt, lead)
+for t in ["Build an annotated dataset split by physical board with zero overlap, and evaluate higher-resolution input, image enhancement and class balancing.",
+          "Develop a deep-learning framework for defect detection and localisation, each model tested once on held-out boards.",
+          "Estimate the recoverable area and grade of each board with the Board Recoverability Index, and a value from the grade.",
+          "Compare models with P, R, F1, mAP50, mAP50-95 and inference time, and improve accuracy with a mathematical model validated statistically."]:
+    bullet(t)
 section("1.4", "Motivation")
-para("Grading by eye is subjective, slow and hard to audit, and the value of a board depends on where its defects are, not only "
-     "on whether it has any. An automatic system that finds every defect, measures how much of the board remains usable and "
-     "assigns a consistent grade can raise throughput, reduce disagreement between graders and support pricing decisions. "
-     "Published work mostly reports defect detection alone, often on splits where images of the same board appear in both "
-     "training and test sets; our motivation is a system that is evaluated on boards it has never seen and that goes all the way "
-     "from an image to a grade and a value estimate.")
+para("Grading by eye is slow and hard to audit; a system that finds every defect, measures the usable part of the board and "
+     "assigns a consistent grade can raise throughput and reduce disagreement between graders.")
 section("1.5", "Outline of the thesis")
-for lead, txt in [("Chapter 2 ", "reviews existing systems, their limitations, the gaps and our research methodology."),
-                  ("Chapter 3 ", "gives the hardware and software requirements, the system architecture, the UML / DFD diagrams and the proposed algorithms."),
-                  ("Chapter 4 ", "describes the data collection process, the technology stack and the pseudocode of the main algorithms."),
-                  ("Chapter 5 ", "covers black-box and white-box testing and test coverage."),
-                  ("Chapter 6 ", "presents the experimental results and the performance analysis."),
-                  ("Chapter 7 ", "concludes with the objectives achieved, contributions, limitations and future enhancements.")]:
-    bullet(txt, lead)
+para("Chapters 2 to 7 cover the literature survey, requirements and design, implementation, testing, results and conclusion.")
 
 # ======================================================================= CHAPTER 2
 chapter(2, "Literature Survey")
 section("2.1", "Review of Existing Systems")
-para("Recent work shows that deep learning works for wood defects but has gaps. Table 2.1 summarises the reviewed papers.")
 table("2.1", "Summary of the literature survey", [
-    ["Author(s), year", "Title", "Technology", "Result", "Drawbacks / issues"],
-    ["Y. Fang, Y. Ma, S. Gao, J. Chen, 2026 [1]", "Recent Advances in Wood Surface Defect Inspection using Deep Learning", "Review of deep-learning inspection", "Comprehensive review; supports automated wood-defect inspection", "Small datasets, poor generalisation and real-time deployment challenges"],
-    ["J. Zheng, 2026 [2]", "IEL-YOLO: A Low-Light Robust Wood Defect Detection Method Based on YOLOv11", "Image enhancement + YOLOv11", "Improves defect visibility in low light; handles complex wood textures", "Generalisation challenges; no multimodal integration"],
-    ["J. Qu, Y. Pang, Z. Wang, 2026 [3]", "WD-SEG: A Deep Learning Framework for Delicate and Accurate Wood Defect Segmentation", "AFN + TFN + ICO + deep learning", "Accurate segmentation; handles low contrast, reduces background interference", "Noise sensitivity, feature ambiguity, real-time deployment challenges"],
-    ["J. Wang, S. Tang, 2026 [4]", "A Novel IWPT-VMD Denoising Method for Enhancing Air-Coupled Ultrasonic Detection of Wood Defects", "IWPT + VMD + ultrasonic signal processing", "Reduces noise; improves signal quality and defect detection", "Requires ultrasonic signals; limited AI integration; no multimodal fusion"],
-    ["C. S. Erasmus, D. Drew, M. J. Booysen, 2026 [5]", "A Low-Cost Wireless Dendrometer and Digital Twin for Precision Forestry Applications", "IoT + LoRaWAN + digital twin", "Low-cost, scalable continuous monitoring", "No wood-quality assessment; no harvest optimisation; limited data fusion"],
-    ["N. Perry et al., 2026 [6]", "Towards Precision Forestry: A Systematic Review of Optimisation Methods for Individual-Tree Decisions in Forest Management", "Heuristics, mathematical programming, machine learning", "Supports optimal forest-management decisions", "Limited real-world implementation; disturbance risks not fully integrated"],
-    ["E. Z. Ba\u015fkent, A. Bon\u010dina, J. G. Borges, 2026 [7]", "A Review and Conceptual Framework for a New Era of Forest Management Planning", "Digital twin, monitoring, simulation, forecasting", "Adaptive forest planning integrating monitoring with forecasting", "Limited ML implementation; no wood-quality assessment"],
-    ["J. Tan et al., 2025 [8]", "ForestryBERT: Continual Learning Adapted to Forestry Text", "BERT + NLP + continual learning", "Domain-specific forestry knowledge management", "Catastrophic forgetting; no defect-detection component"]],
-    [3.0, 3.6, 2.6, 3.4, 3.4], size=8.5)
-para("The fusion of detector outputs follows weighted box fusion [17]; the closest detection architecture to our synopsis is "
-     "CWB-YOLOv8 [10], whose Wise-IoU loss [18] we also evaluate, and AI-based wood surface inspection is reviewed in [11].")
+    ["Author(s), year", "Technology", "Result", "Drawbacks / issues"],
+    ["Fang et al., 2026 [1]", "Review of deep-learning wood defect inspection", "Supports automated wood-defect inspection", "Small datasets, poor generalisation, real-time deployment challenges"],
+    ["Zheng, 2026 [2]", "Image enhancement + YOLOv11 (IEL-YOLO)", "Better defect visibility in low light", "Generalisation challenges"],
+    ["Qu et al., 2026 [3]", "WD-SEG segmentation (AFN + TFN + ICO)", "Accurate segmentation at low contrast", "Noise sensitivity, real-time deployment challenges"],
+    ["Wang and Tang, 2026 [4]", "Ultrasonic signal processing (IWPT-VMD)", "Less noise, better defect detection", "Requires ultrasonic sensors; limited AI integration"],
+    ["Erasmus et al., 2026 [5]", "IoT + LoRaWAN + digital twin", "Low-cost continuous monitoring", "No wood-quality assessment"],
+    ["Perry et al., 2026 [6]", "Optimisation and ML for tree-level decisions", "Optimal forest-management decisions", "Limited real-world implementation"],
+    ["Başkent et al., 2026 [7]", "Digital twin, monitoring, forecasting", "Adaptive forest planning", "No wood-quality assessment"],
+    ["Tan et al., 2025 [8]", "ForestryBERT (NLP, continual learning)", "Forestry knowledge management", "No defect-detection component"]],
+    [3.4, 4.4, 4.0, 4.6], size=8.5)
 section("2.2", "Limitations of Existing Systems")
-for t in ["Small datasets and poor generalisation to new boards, often measured on image-level splits in which the same board appears in training and test data.",
-          "Real-time deployment challenges for heavy segmentation models; sensitivity to noise and low contrast.",
-          "Ultrasonic methods need special sensors and offer limited AI integration.",
-          "Forestry digital-twin, optimisation and language-model systems do not assess wood quality from images.",
-          "Detection is rarely connected to a usable-area estimate, a grade or a value."]:
-    bullet(t)
+para("Existing work reports small datasets and weak generalisation to new boards, has real-time deployment issues, needs special "
+     "sensors in the ultrasonic case, and rarely connects detection to a usable-area estimate, a grade or a value.")
 section("2.3", "Gap Identification and Analysis")
-para("The common gaps are small datasets, weak generalisation to new boards, and no step from detection to a usable-area "
-     "estimate. None of the forestry-pipeline papers assesses wood quality from images or connects defects to recoverable value; "
-     "that is the gap at the end of the chain that our system targets. We address it with (i) a leakage-free, board-level "
-     "evaluation, (ii) a mathematical model of class balancing and weighted box fusion whose gains are tested statistically, and "
-     "(iii) the Board Recoverability Index, which converts detections into a damage score, a recoverable area and a grade.")
+para("None of the reviewed systems assesses wood quality from images all the way to recoverable value. We address this gap with "
+     "a leakage-free, board-level evaluation, a mathematical model of class balancing and weighted box fusion [17] whose gains "
+     "are tested statistically, and the Board Recoverability Index for grading.")
 section("2.4", "Research Methodology for the Proposed System")
-para("Figure 2.1 shows the methodology as completed. Images are cleaned and split by board; input is handled at high resolution "
-     "with grain-safe augmentation and class balancing; YOLO11 models detect defects; the mathematical model fuses detectors and "
-     "validates every gain statistically. The detections then go two ways: defect analysis and evaluation on one side, and "
-     "recoverability grading and value estimation on the other, ending in the application and the final assessment.")
-figure("2.1", FIGS / "methodology_final.png", "Methodology of the proposed system", 13)
-para("Every choice is made on validation boards; each test model is evaluated exactly once; an enhancement study (CLAHE, "
-     "denoise, sharpen) is run on validation.")
+para("Images are cleaned and split by board; input is handled at high resolution with grain-safe augmentation and class "
+     "balancing; YOLO11 models detect defects; the mathematical model fuses detectors and validates every gain statistically; "
+     "the detections are then graded and valued (Fig. 2.1). Every choice is made on validation boards and each test model is "
+     "evaluated exactly once.")
+figure("2.1", FIGS / "methodology_final.png", "Methodology of the proposed system", 7.0)
 
 # ======================================================================= CHAPTER 3
 chapter(3, "Requirement Analysis & Design")
 section("3.1", "Hardware Requirements")
-table("3.1", "Hardware requirements", [
-    ["Purpose", "Hardware used"],
-    ["Model training", "Kaggle cloud notebook with one NVIDIA Tesla T4 GPU (16 GB); about 1.4-2.4 GPU-hours per YOLO11s run on 4,000 images, 3.2 h (1024 px) and 4.3 h (1280 px) on the expanded data"],
-    ["Data preparation", "Kaggle CPU sessions"],
-    ["Development and demonstration", "ASUS Vivobook laptop: Intel Core i5-12500H, 16 GB RAM, Intel Iris Xe graphics, Windows 11"],
-    ["Deployment (inference)", "Laptop CPU only; no GPU required (about 0.5 s per image)"]], [4.5, 11.5])
+para("Training: Kaggle cloud notebook with one NVIDIA Tesla T4 GPU (16 GB). Development and demonstration: laptop with an Intel "
+     "Core i5-12500H processor and 16 GB RAM. Deployment needs only a CPU (about 0.5 s per image).")
 section("3.2", "Software Requirements")
-table("3.2", "Software requirements", [
-    ["Software", "Version / use"],
-    ["Python", "3.12"],
-    ["PyTorch", "2.x (CUDA on Kaggle, CPU build on the laptop)"],
-    ["Ultralytics YOLO11 [13]", "8.4.142: training, validation, inference"],
-    ["OpenCV, NumPy", "image processing, board mask, copy-paste synthesis, enhancement study"],
-    ["Gradio", "web application"],
-    ["Matplotlib", "figures and charts"],
-    ["pytest, pytest-cov", "unit tests and coverage"],
-    ["Kaggle API, Git / GitHub", "remote training runs, version control"]], [5.0, 11.0])
+para("Python 3.12, PyTorch, Ultralytics YOLO11 8.4.142 [13], OpenCV, NumPy, Gradio, Matplotlib, pytest; Git / GitHub; Windows 11.")
 section("3.3", "System Architecture Diagram")
-para("The data and detection pipeline (right) covers board images, preparation and balancing scripts, training on a GPU, "
-     "evaluation with statistics, and detection output with box fusion. The defect analysis and application side (left) is what "
-     "the user gets: the web application, defect analysis, recoverability with the BRI, the value estimate and a JSON report. "
-     "Both meet in the final wood-quality assessment per board.")
-figure("3.1", FIGS / "system_design_final.png", "System architecture", 14)
+para("The data and detection pipeline (board images, preparation and balancing, training, evaluation, detection with box "
+     "fusion) feeds the application side (defect analysis, BRI grading, value estimate, JSON report); both meet in the final "
+     "wood-quality assessment per board (Fig. 3.1).")
+figure("3.1", FIGS / "system_design_final.png", "System architecture", 10.5)
 section("3.4", "UML Diagrams Relevant for the Proposed System")
-para("Figure 3.2 is the context-level data-flow diagram, Figure 3.3 decomposes the system into its six processes and three data "
-     "stores, and Figure 3.4 is the activity diagram of grading one board in the application.")
-figure("3.2", RFIGS / "dfd_level0.png", "Data-flow diagram, level 0", 14)
-figure("3.3", RFIGS / "dfd_level1.png", "Data-flow diagram, level 1", 15.5)
-figure("3.4", RFIGS / "activity_diagram.png", "Activity diagram: grading a board in the application", 9)
+figure("3.2", RFIGS / "dfd_level0.png", "Data-flow diagram, level 0", 9.0)
+figure("3.3", RFIGS / "activity_diagram.png", "Activity diagram: grading a board in the application", 5.2)
 section("3.5", "Proposed Algorithm and Techniques")
-para("", "1. Class balancing. ")
-doc.paragraphs[-1].add_run("")
-para("Target boxes per class n_c* = n_max (full balance) or n_c* = \u221a(n_c \u00d7 n_max) (partial balance, the repeat-factor rule "
-     "of LVIS [15], same idea as the effective number of samples [14]). Real defect crops are cut from training boards and pasted "
-     "onto defect-free training boards (2-5 per image), only inside the board mask, with no rotation and with Poisson or feathered "
-     "blending [16]; training split only.")
-para("", "2. Weighted box fusion [17]. ")
-para("Boxes of the same class from several detectors that overlap are merged: b_f = \u03a3(w\u00b7c\u00b7b) / \u03a3(w\u00b7c) and "
-     "c_f = (\u03a3 w\u00b7c / \u03a3 w) \u00d7 min(\u03a3 w, W) / W, where b is a box, c its confidence, w the weight of its model and W "
-     "the sum of model weights. Fusion averages the boxes weighted by confidence and lowers the confidence of boxes only one model finds.")
-para("", "3. Wise-IoU v3 [18] and per-class thresholds. ")
-para("L = r \u00d7 exp(d\u00b2 / (W_g\u00b2 + H_g\u00b2)) \u00d7 (1 \u2212 IoU), r = \u03b2 / (\u03b4 \u00b7 \u03b1^(\u03b2\u2212\u03b4)); per-class "
-     "thresholds t_c = argmax_t F1_c(t) on validation. Both were evaluated and not adopted.")
-para("", "4. Board Recoverability Index (BRI). ")
-for t in ["Union of defects: A_def = |R_1 \u222a ... \u222a R_n| (overlaps counted once).",
-          "Severity: w_c: Crack 1.00, Dead_Knot 0.60, Live_Knot 0.40, Resin 0.30 (guide's placeholders).",
-          "Position: p_i = 1 \u2212 exp(\u2212d_i / 250 px), d_i = distance to the board's side edge (our change).",
-          "Influence: s_i = w_c \u00d7 conf_i \u00d7 p_i.",
-          "Damage: I(x, y) = max_i s_i; DIS = \u03a3 I / A_board (board pixels, our change); A_rec = A_board (1 \u2212 DIS).",
-          "Grade: A / B / C / Reject from thresholds fitted on validation boards with the guide's weighted-kappa calibration.",
-          "Check: the guide's worked example is reproduced exactly (DIS 0.020860, grade B)."]:
-    bullet(t)
-figure("3.5", FIGS / "bri_geometry.png", "Damage is measured from the board edge, not the image border", 13)
-para("", "5. Statistical validation. ")
-para("Board-level bootstrap: the test boards are resampled 1,000 times with replacement, so the interval reflects board-to-board "
-     "variation [20]; exact Wilcoxon signed-rank test on per-board AP50 differences [21]; agreement of grades by quadratic "
-     "weighted kappa [19].")
+for lead, t in [
+        ("Class balancing: ", "target boxes per class n_c* = √(n_c × n_max) (partial balance, the repeat-factor rule of LVIS [15]); real defect crops are pasted onto defect-free training boards inside the board mask [16]."),
+        ("Weighted box fusion [17]: ", "overlapping boxes of several detectors are merged, b_f = Σ(w·c·b) / Σ(w·c); a box found by only one model gets lower confidence."),
+        ("Board Recoverability Index: ", "s_i = w_c × conf_i × p_i with p_i = 1 − exp(−d_i / 250 px), d_i the distance to the board's side edge; DIS = Σ I / A_board; A_rec = A_board (1 − DIS); grade A / B / C / Reject from thresholds fitted on validation boards."),
+        ("Statistical validation: ", "board-level bootstrap confidence intervals [20] and the exact Wilcoxon signed-rank test [21]; grade agreement by weighted kappa [19].")]:
+    bullet(t, lead)
 
 # ======================================================================= CHAPTER 4
 chapter(4, "Implementation / Methodology / Proposed Approach")
 section("4.1", "Description of Data Collection Process")
-para("The images come from the industrial line-scan dataset of Kodytek et al. [12]: 2800 \u00d7 1024 board images with bounding-box "
-     "annotations. Up to the 50% review we used 4,000 images from 81 physical boards with 8 classes (Quartzity, Live_Knot, "
-     "Marrow, Resin, Dead_Knot, Knot_with_crack, Knot_missing, Crack) and 9,053 boxes, split by physical board into 52 / 17 / 12 "
-     "boards for training, validation and test with zero overlap. The final detector uses the four classes with the most data: "
-     "Live_Knot, Dead_Knot, Resin and Crack.")
-para("Rare classes limited accuracy at mid-term, so the data was expanded to the complete industrial release of 20,276 images "
-     "from 407 boards, keeping the original test boards fixed (280 / 76 / 51 boards). Our data work: we verified the copy we "
-     "trained on against the original archive (43,974 boxes identical), fixed label-format errors, removed zero-size boxes, "
-     "generated grain-aware synthetic defects inside the board mask, and photographed wood surfaces on campus for real-world testing.")
+para("The images come from the industrial line-scan dataset of Kodytek et al. [12] (2800 × 1024 board images with bounding "
+     "boxes). We split the images by physical board and used the four classes with the most data: Live_Knot, Dead_Knot, Resin "
+     "and Crack. To address scarce rare-class data, the data was expanded to the complete release with the original test boards "
+     "kept fixed. We verified the copy we trained on against the original archive (43,974 boxes identical), fixed label-format "
+     "errors, removed zero-size boxes, generated grain-aware synthetic defects, and photographed wood surfaces on campus for "
+     "real-world testing.")
 bs, bf = R["balance"]["train_sqrt"], R["balance_full"]["train_sqrt"]
 table("4.1", "Data at the 50% review and in the final system", [
     ["", "50% review", "Final"],
-    ["Images / physical boards", "4,000 / 81", "20,276 / 407 (complete industrial release [12])"],
-    ["Boards train / val / test", "52 / 17 / 12", "280 / 76 / 51 (original test boards kept fixed)"],
-    ["4-class training boxes incl. synthetic copy-paste data", f"{sum(bs.values()):,}", f"{sum(bf.values()):,}"],
-    ["Crack training boxes (rarest, most severe)", f"{bs['Crack']:,}", f"{bf['Crack']:,}"]], [6.5, 3.5, 6.0])
-bal = R["balance"]
-table("4.2", "Class balancing of the 4-class training set (4,000-image stage)", [
-    ["Class", "Training boxes", "Full balance (1:1)", "Partial balance \u221a(n_c n_max)"]] +
-    [[c, str(bal["train_plain"][c]), str(bal["train_full"][c]), str(bal["train_sqrt"][c])] for c in ["Live_Knot", "Dead_Knot", "Resin", "Crack"]] +
-    [["Imbalance max : min", "9.5 : 1", "1.06 : 1", "3.1 : 1"]], [4, 3.5, 3.5, 4.5])
-prev = sorted((ROOT / "runs_log" / "run4_4cls_kaggle_v1" / "previews").glob("train_sqrt_*.jpg"))
-if prev:
-    figure("4.1", prev[0], "Synthetic training image: real defect crops pasted inside the board", 14)
+    ["Images / physical boards", "4,000 / 81", "20,276 / 407"],
+    ["Boards train / val / test", "52 / 17 / 12", "280 / 76 / 51"],
+    ["4-class training boxes (incl. synthetic)", f"{sum(bs.values()):,}", f"{sum(bf.values()):,}"],
+    ["Crack training boxes", f"{bs['Crack']:,}", f"{bf['Crack']:,}"]], [7, 4, 4])
 section("4.2", "Tech Stack")
-table("4.3", "Technology stack", [
-    ["Layer", "Tools"],
-    ["Language", "Python 3.12"],
-    ["Deep learning", "PyTorch, Ultralytics YOLO11 (YOLO11s, YOLO11m), fine-tuned from COCO weights"],
-    ["Image processing", "OpenCV, NumPy (board mask, copy-paste synthesis, CLAHE / denoise / sharpen)"],
-    ["Mathematical model", "weighted box fusion, BRI, bootstrap and exact Wilcoxon test implemented in Python"],
-    ["Training infrastructure", "Kaggle notebooks with a Tesla T4 GPU, Kaggle API"],
-    ["Application", "Gradio web interface, JSON reports"],
-    ["Testing", "pytest, pytest-cov, Gradio client for scripted black-box tests"],
-    ["Version control", "Git, GitHub"]], [4.5, 11.5])
-para("Training configuration: COCO-pretrained weights, rectangular input at 1024 px (1024 \u00d7 384) and 1280 px, AdamW with "
-     "lr0 0.001, cosine schedule, batch 32, seed 42, grain-safe augmentation (no rotation, no vertical flip); best.pt chosen on "
-     "validation; each test model evaluated once (confidence 0.001, NMS IoU 0.6).")
+para("Python 3.12; PyTorch and Ultralytics YOLO11 (fine-tuned from COCO weights); OpenCV and NumPy for image processing; Gradio "
+     "for the web application; Kaggle notebooks with a Tesla T4 GPU for training; pytest for testing; Git / GitHub for version "
+     "control.")
 section("4.3", "Pseudocode")
-para("", "Algorithm 1: board-level split and partial class balancing")
-code(["INPUT: images with boxes, board id = first 4 digits of the file name",
-      "group images by board; assign boards to train / val / test (70 / 18 / 12), seed 42",
-      "ASSERT no board appears in two splits",
-      "FOR each class c: n_c = number of training boxes; n_max = max_c n_c",
-      "    target_c = round(sqrt(n_c * n_max))",
-      "cut isolated defect crops from training boards",
-      "WHILE some class c has fewer than target_c boxes:",
-      "    pick a defect-free training board and 2-5 crops of under-filled classes",
-      "    paste each crop inside the board mask, along the grain (Poisson or feathered blend)",
-      "    write the new image and its boxes to the training set only"])
-para("", "Algorithm 2: weighted box fusion of K detectors (one image)")
+para("", "Algorithm 1: weighted box fusion (one image)")
 code(["FOR each class k:",
-      "    items = all boxes of class k from all models, with weight w_m and confidence c",
-      "    sort items by w_m * c, descending",
-      "    FOR each item: if IoU(item, a cluster's fused box) > t_iou add it to that cluster, else start a new cluster",
+      "    sort the boxes of class k from all models by w_m * c",
+      "    add each box to a cluster if IoU with its fused box > t_iou, else start a new cluster",
       "    FOR each cluster: b_f = sum(w*c*b) / sum(w*c)",
       "                      c_f = (sum(w*c) / sum(w)) * min(sum(w), W) / W",
       "RETURN fused boxes, confidences, classes"])
-para("", "Algorithm 3: Board Recoverability Index of one board")
-code(["board = wood region of the image (board mask, left and right edges)",
-      "FOR each detected defect i: d_i = distance from box centre to the nearest board side edge",
-      "    p_i = 1 - exp(-d_i / 250);  s_i = w_class * conf_i * p_i",
-      "I(x, y) = max of s_i over the boxes covering pixel (x, y)",
-      "DIS = sum(I) / board area;  recoverable % = 100 * (1 - DIS)",
+para("", "Algorithm 2: Board Recoverability Index (one board)")
+code(["FOR each defect i: d_i = distance to the nearest board side edge",
+      "    s_i = w_class * conf_i * (1 - exp(-d_i / 250))",
+      "DIS = sum over board pixels of max s_i  /  board area",
+      "recoverable % = 100 * (1 - DIS)",
       "grade = A if DIS < t1, B if DIS < t2, C if DIS < t3, else Reject"])
-para("", "Algorithm 4: grading an uploaded image in the application")
-code(["load the 1024-px and 1280-px YOLO11s models once",
-      "FOR an uploaded image: run both models (conf 0.25, NMS IoU 0.6)",
-      "fuse their boxes (Algorithm 2, IoU 0.65, equal weights)",
-      "compute BRI grade (Algorithm 3) with the thresholds fitted on validation",
-      "value = volume * recoverable share * grade-A price * grade factor",
-      "show boxes, heatmap, grade, per-class table; write JSON report"])
 
 # ======================================================================= CHAPTER 5
 chapter(5, "Testing")
 section("5.1", "Black Box Testing")
 section("5.1.1", "Tools and Techniques used", 3)
-para("The application was tested from the outside, through its web interface and through scripted calls to the same interface "
-     "with the Gradio client: upload an image, choose the model and settings, and compare the returned defects, grade and report "
-     "with the expected result. Inputs cover clean boards, each defect class, each grade, non-wood images and a fresh installation.")
+para("The application was tested through its web interface and through scripted calls with the Gradio client: upload an image "
+     "and compare the returned defects and grade with the expected result.")
 section("5.1.2", "Test Suite and Report", 3)
-table("5.1", "Black-box test cases (final detector, confidence 0.25)", [
-    ["ID", "Input", "Expected result", "Observed result", "Status"],
-    ["BB1", "Unseen test board with no defects", "No boxes, Grade A", "No boxes, Grade A", "Pass"],
-    ["BB2", "Unseen board with 3 cracks and 1 dead knot", "All 4 defects, grade as annotation (C)", "4 correct boxes, Grade C", "Pass"],
-    ["BB3", "Unseen board with 6 defects of 3 types", "All 6 defects, Grade C", "6 correct boxes, Grade C", "Pass"],
-    ["BB4", "Unseen board with crack, resin and dead knots", "All defects, Grade Reject", "4 correct boxes, Grade Reject, cut-offs shown", "Pass"],
-    ["BB5", "Test-boards tab: annotated board", "Annotator's and model's boxes and grades side by side", "Both shown", "Pass"],
-    ["BB6", "Eight non-wood photographs", "No wood defects", "No boxes on 7 of 8; Grade A shown (no wood check)", "Partial"],
-    ["BB7", "Fresh installation without model files", "Clear error naming the missing file", "Error message with the missing file path", "Pass"],
-    ["BB8", "Same image through the public link", "Same result as locally", "Identical grade and damage score", "Pass"],
-    ["BB9", "Report download", "JSON report with detections and grade", "JSON file produced", "Pass"],
-    ["BB10", "Speed on the laptop CPU", "Under 1 s per image", "About 0.46 s per image (mean of 11 images)", "Pass"]],
-    [1.2, 3.8, 3.8, 4.6, 1.4], size=9)
+table("5.1", "Black-box test cases", [
+    ["ID", "Input", "Expected", "Observed", "Status"],
+    ["BB1", "Unseen board, no defects", "No boxes, Grade A", "No boxes, Grade A", "Pass"],
+    ["BB2", "Unseen board, 3 cracks + 1 dead knot", "All defects, Grade C", "4 correct boxes, Grade C", "Pass"],
+    ["BB3", "Unseen board, crack, resin, dead knots", "All defects, Grade Reject", "4 correct boxes, Grade Reject", "Pass"],
+    ["BB4", "Non-wood photographs (8)", "No wood defects", "No boxes on 7 of 8", "Partial"],
+    ["BB5", "Installation without model files", "Clear error message", "Error names the missing file", "Pass"],
+    ["BB6", "Speed on laptop CPU", "Under 1 s per image", "About 0.46 s per image", "Pass"]], [1.2, 4.6, 3.6, 4.2, 1.4], size=9)
 section("5.2", "White Box Testing")
 section("5.2.1", "Tools and Techniques used", 3)
-para("Internal functions were tested with unit tests written in pytest against known values: the guide's worked example for "
-     "the BRI, hand-computed IoU and fusion cases, grade thresholds and the statistical test. In addition, the data and training "
-     "pipelines contain assertions that stop a run when a check fails (board overlap, image and box counts), and a CPU smoke test "
-     "runs the complete training pipeline on a small slice before any GPU run.")
+para("Unit tests in pytest check internal functions against known values, and the data pipeline contains assertions that stop a "
+     "run when a check fails.")
 section("5.2.2", "Test Suite and Report", 3)
 table("5.2", "White-box tests", [
-    ["ID", "Unit / check", "Condition tested", "Status"],
-    ["WB1", "bri.board_report", "Guide's worked example: DIS 0.020860, grade B, union 102,800 px", "Pass"],
-    ["WB2", "bri.board_report", "Board without defects: DIS 0, Grade A, 100% recoverable", "Pass"],
-    ["WB3", "bri.grade", "Damage scores map to A / B / C / Reject at the fitted cut-offs", "Pass"],
-    ["WB4", "bri.position_penalty", "Penalty grows with distance from the board edge, within [0, 1]", "Pass"],
-    ["WB5", "bri.quadratic_weighted_kappa", "Identical gradings give 1; reversed gradings give a low value", "Pass"],
-    ["WB6", "eval_capture.iou_matrix", "Identical boxes IoU 1, disjoint boxes IoU 0", "Pass"],
-    ["WB7", "math_model.wbf_image", "Agreeing boxes merge; a box from one model only gets lower confidence", "Pass"],
-    ["WB8", "eval_capture.match", "A ground-truth box is matched by at most one prediction", "Pass"],
-    ["WB9", "eval_capture.wilcoxon_exact", "Twelve positive differences give p < 0.01", "Pass"],
-    ["WB10", "Split assertion (pipeline)", "Zero boards shared between train, val and test", "Pass"],
-    ["WB11", "Data assertions (pipeline)", "20,276 images; original val / test: 714 / 469 images with unchanged box counts", "Pass"]],
-    [1.2, 4.0, 8.4, 1.4], size=9)
+    ["ID", "Unit / check", "Condition", "Status"],
+    ["WB1", "bri.board_report", "Guide's worked example: DIS 0.020860, grade B", "Pass"],
+    ["WB2", "bri.grade", "Damage scores map to A / B / C / Reject", "Pass"],
+    ["WB3", "math_model.wbf_image", "Agreeing boxes merge; single-model box gets lower confidence", "Pass"],
+    ["WB4", "eval_capture.iou_matrix / match", "IoU values; one prediction per ground-truth box", "Pass"],
+    ["WB5", "Split assertion", "Zero boards shared between train, val and test", "Pass"]], [1.2, 4.8, 7.6, 1.4], size=9)
 section("5.3", "Test Coverage using Tool")
-para("Statement coverage of the unit tests was measured with pytest-cov (coverage.py). All 9 unit tests pass. Coverage is "
-     "highest for the grading module; the remaining statements are mostly command-line and file-handling code exercised by the "
-     "pipeline runs rather than by unit tests.")
-table("5.3", "Statement coverage of the unit tests (pytest-cov)", [
-    ["Module", "Statements", "Missed", "Coverage"],
-    ["bri.py (Board Recoverability Index)", "74", "22", "70%"],
-    ["eval_capture.py (matching, scoring, statistics)", "96", "41", "57%"],
-    ["math_model.py (fusion, thresholds, tests)", "134", "88", "34%"],
-    ["Total", "304", "151", "50%"]], [7, 2.5, 2.5, 2.5], bold_last=True)
+para("Statement coverage measured with pytest-cov: 9 unit tests pass, with 70% coverage of the grading module (bri.py), 57% of "
+     "eval_capture.py and 34% of math_model.py, 50% overall.")
 
 # ======================================================================= CHAPTER 6
 chapter(6, "Results and Discussions")
-para("Every result in this chapter is measured on boards never used for training, validation or any choice of settings. At the "
-     "50% review the detectors were tied at 63-65 mAP50 over 8 classes, so model size was not the bottleneck; scarce and "
-     "imbalanced data was. After the review, the mathematical model raised test mAP50 on the four main classes from 69.2 to "
-     f"74.7, a statistically significant gain, and the same recipe on the expanded data lifted the final detector to "
-     f"{ffo['map50']:.1f} on the same boards and {fff['map50']:.1f} on 51 further boards. Single changes such as balancing alone, "
-     "1280-px input, Wise-IoU or per-class thresholds were within the noise of a 12-board test set; their value came from the "
-     "diversity they gave to the fused models.")
+para("All results are on boards never used for training or for any choice of settings. At the 50% review the detectors were "
+     "tied at 63-65 mAP50 over 8 classes, limited by scarce and imbalanced data. The mathematical model raised test mAP50 on the "
+     f"four main classes from 69.2 to 74.7, and the same recipe on the expanded data lifted the final detector to {ffo['map50']:.1f} "
+     f"on the same boards and {fff['map50']:.1f} on 51 further boards.")
 section("6.1", "Experimental Results")
-table("6.1", "Results at the 50% review (8 classes, 12 unseen test boards)", [
-    ["Aspect", "YOLO11m", "YOLO11s", "m - s"],
-    ["mAP50", "63.0", "64.6", "-1.6"], ["mAP50-95", "34.0", "33.4", "+0.6"], ["Precision", "63.4", "71.0", "-7.6"],
-    ["Recall", "66.2", "64.1", "+2.1"], ["F1", "64.7", "67.4", "-2.7"], ["Crack mAP50 / recall", "57.7 / 72.6", "53.0 / 63.2", "+4.7 / +9.4"],
-    ["Inference, T4", "33.2 ms (30 FPS)", "11.7 ms (86 FPS)", "2.8x slower"], ["Training cost", "2.64 h", "1.43 h", "1.8x"],
-    ["Parameters", "20.0 M", "9.4 M", "2.1x"]], [5, 3.5, 3.5, 3.5])
-table("6.2", "Results: 50% review vs final (test, 12 unseen boards)", [
-    ["Model", "Classes", "P", "R", "F1", "mAP50", "mAP50-95"],
-    ["50% review: YOLO11m", "8", "63.4", "66.2", "64.7", "63.0", "34.0"],
-    ["50% review: YOLO11s", "8", "71.0", "64.1", "67.4", "64.6", "33.4"],
-    ["50% review YOLO11s, scored on the 4 classes", "4", "-", "-", "-", "69.6", "32.9"],
-    ["YOLO11s 4 classes, partial balance", "4", "74.8", "69.4", "72.0", "69.2", "33.1"],
-    ["Mathematical model: fusion of four 4-class models", "4", "-", "-", "-", "74.7", "36.7"],
-    ["Final: fusion of two models, expanded data", "4", "-", "-", "-", f"{ffo['map50']:.1f}", f"{ffo['map']:.1f}"],
-    ["Final, on 51 further unseen boards", "4", "-", "-", "-", f"{fff['map50']:.1f}", f"{fff['map']:.1f}"]],
-    [6.6, 1.5, 1.4, 1.4, 1.4, 1.6, 2.0], size=9.5)
-sd = R["test4"]["sqrt_1024"]
-table("6.3", "Per-class test mAP50 (12 unseen boards)", [
-    ["Class", "Test boxes", "50% review (YOLO11s)", "Best single 4-class", "Final detector"]] +
-    [[c, str(n), f"{T8['YOLO11s'][c][3]:.1f}", f"{sd[c][3]:.1f}", f"{ffo['ap50'][c]:.1f}"]
-     for c, n in (("Dead_Knot", 343), ("Live_Knot", 406), ("Resin", 69), ("Crack", 95))] +
-    [["ALL (4 classes)", "913", "69.6", f"{sd['ALL'][3]:.1f}", f"{ffo['map50']:.1f}"]], [3.5, 2.5, 3.5, 3.5, 3.0], bold_last=True)
-V = FU["val_orig"]
-def mm(x):
-    return f"{x['map50']:.1f} / {x['map']:.1f}"
-table("6.4", "Effect of the data expansion (mAP50 / mAP50-95)", [
-    ["System", "Val, 714 original images", "Test, 469 original images", "Test, 51 further boards (2,488)"],
-    ["Four-model fusion (before expansion)", "{:.1f} / {:.1f}".format(*V["deployed_fusion"]), mm(FT["deployed_fusion"]["orig"]), "-"],
-    ["YOLO11s expanded data, 1024 px", "{:.1f} / {:.1f}".format(*V["full_1024"]), mm(FT["full_1024"]["orig"]), mm(FT["full_1024"]["full"])],
-    ["YOLO11s expanded data, 1280 px", "{:.1f} / {:.1f}".format(*V["full_1280"]), mm(FT["full_1280"]["orig"]), mm(FT["full_1280"]["full"])],
-    ["Fusion of the two (final detector)", "{:.1f} / {:.1f}".format(*V["full_fusion"]), mm(ffo), mm(fff)]],
-    [5.5, 3.4, 3.4, 3.7], size=9.5, bold_last=True)
-table("6.5", "How we arrived at the final model", [
-    ["Step (YOLO11s unless stated)", "Val mAP50", "Test mAP50", "Decision and reason"],
-    ["8 classes, YOLO11m vs YOLO11s (50% review)", "65.7 / 65.3", "63.0 / 64.6", "Tied: capacity is not the bottleneck"],
-    ["Fusion of YOLO11m + YOLO11s, 8 classes", "-", "65.7", "mAP50-95 +2.4 (significant), still limited by rare classes"],
-    ["4 main classes, no balancing", "73.1", "71.7", "Fair baseline for 4 classes: 69.6 (8-class model)"],
-    ["+ full balance 1:1", "71.9", "not tested", "Worse on validation: cracks pasted up to 17 times"],
-    ["+ partial balance \u221a(n_c n_max)", "75.3", "69.2", "Best single on validation; kept as fusion member"],
-    ["+ 1280 px input", "74.6", "71.6", "Not better alone; adds diversity for fusion"],
-    ["+ Wise-IoU v3 loss / 3 seeds", "74.6", "not tested", "Within seed spread 0.8: not adopted"],
-    ["Fusion of four 4-class models", "78.1", "74.7", "Significant gain: adopted"],
-    ["Same recipe on the expanded data, fused (final)", "80.2", f"{ffo['map50']:.1f}", "Rule 78.1 on val beaten: final, 2 models"]],
-    [5.2, 2.0, 2.0, 6.8], size=9, bold_last=True)
+table("6.1", "Results: 50% review vs final (test mAP50 / mAP50-95)", [
+    ["Model", "Classes", "mAP50", "mAP50-95"],
+    ["50% review: YOLO11m", "8", "63.0", "34.0"],
+    ["50% review: YOLO11s", "8", "64.6", "33.4"],
+    ["50% review YOLO11s, on the 4 classes", "4", "69.6", "32.9"],
+    ["Mathematical model: fusion of four models", "4", "74.7", "36.7"],
+    ["Final: fusion of two models, expanded data", "4", f"{ffo['map50']:.1f}", f"{ffo['map']:.1f}"],
+    ["Final, on 51 further unseen boards", "4", f"{fff['map50']:.1f}", f"{fff['map']:.1f}"]], [7.5, 2, 2.5, 2.5], bold_last=False)
+pi = bri["test_per_image"]
+table("6.2", "Statistical and grading validation", [
+    ["Measure", "Value"],
+    ["Fusion vs best single model (mAP50, 95% CI)", f"+5.5 [{st4['map50_diff_ci'][0]:+.1f}, {st4['map50_diff_ci'][1]:+.1f}], Wilcoxon p = {st4['wilcoxon_p']:.3f}"],
+    ["Final vs four-model fusion (mAP50, 95% CI)", f"{ffo['map50'] - FT['deployed_fusion']['orig']['map50']:+.1f} [{stfu['map50_diff_ci'][0]:+.1f}, {stfu['map50_diff_ci'][1]:+.1f}]"],
+    ["BRI grade vs annotation-based grade", f"exact {pi['exact']*100:.1f}%, within one grade {pi['within_one']*100:.1f}%, weighted kappa {pi['qwk']:.2f}"]], [7, 8])
 section("6.2", "Performance Analysis (Graphs / Metrics)")
-figure("6.1", RFIGS / "per_class_comparison.png", "Per-class test mAP50: 50% review vs final detector", 13)
-para("The largest gains are on the hardest defects: Resin from 60.4 to 76.6 and Crack from 53.0 to 62.2; Dead_Knot was already "
-     "strong and stays near 90. On the 51 further boards Crack reaches 67.4.")
-figure("6.2", ROOT / "runs_log" / "run7_full4_1024_v2" / "results.png", "Training and validation curves of the final 1024-px model", 15.5)
-table("6.6", "Statistical validation (test, 12 boards)", [
-    ["Comparison", "mAP50 diff", "95% CI (board bootstrap)", "Boards better / worse", "Wilcoxon p"],
-    ["Final detector (expanded data) - four-model fusion", f"{ffo['map50'] - FT['deployed_fusion']['orig']['map50']:+.1f}", f"[{stfu['map50_diff_ci'][0]:+.1f}, {stfu['map50_diff_ci'][1]:+.1f}]", f"{stfu['boards_better']} / {stfu['boards_worse']}", f"{stfu['wilcoxon_p']:.2f}"],
-    ["Four-model fusion - best single 4-class model", "+5.5", f"[{st4['map50_diff_ci'][0]:+.1f}, {st4['map50_diff_ci'][1]:+.1f}]", f"{st4['boards_better']} / {st4['boards_worse']}", f"{st4['wilcoxon_p']:.3f}"],
-    ["Fusion (YOLO11m + YOLO11s) - YOLO11s, mAP50", "+1.1", "[-0.5, +2.7]", "7 / 5", "0.52"],
-    ["Fusion - YOLO11s, mAP50-95", "+2.4", "[+1.6, +3.2]", "-", "-"],
-    ["Partial balance - no balancing (4 cls)", "-2.6", "[-4.6, +0.3]", "4 / 8", "0.57"]],
-    [6.0, 2.0, 3.2, 2.6, 2.2], size=9)
-para("Only the fusion and data-expansion gains have intervals that exclude zero; the four-model fusion is also significant by the "
-     "Wilcoxon test. Repeating the final setup with seeds 42 / 1 / 2 gives validation mAP50 75.3 / 74.8 / 75.6 (spread 0.8).")
-pi, pb = bri["test_per_image"], bri["test_per_board"]
-table("6.7", "Grading validation (BRI) against annotation-based grades", [
-    ["Agreement", "Per image (469)", "Per board (12)"],
-    ["Exact grade", f"{pi['exact']*100:.1f} %", f"{pb['exact']*100:.1f} %"],
-    ["Within one grade", f"{pi['within_one']*100:.1f} %", f"{pb['within_one']*100:.1f} %"],
-    ["Quadratic weighted kappa [19]", f"{pi['qwk']:.2f}", f"{pb['qwk']:.2f}"],
-    ["Spearman correlation of damage scores", f"{pi['spearman']:.2f}", f"{pb['spearman']:.2f}"],
-    ["Mean abs. error, recoverable area", f"{pi['mae_recoverable_pct']:.2f} pts", f"{pb['mae_recoverable_pct']:.2f} pts"]], [6.5, 4, 4])
-E = ["raw", "clahe", "denoise", "sharpen"]
-table("6.8", "Image enhancement study (validation mAP50)", [["Condition", "Raw", "CLAHE [22]", "Denoise", "Sharpen"]] +
-      [[lab] + [p1(enh["table"][c][e]["map50"]) for e in E] for c, lab in
-       [("normal", "Normal"), ("low_light", "Low light"), ("overexposed", "Over-exposed"), ("blur", "Blur"), ("noise", "Noise"), ("low_contrast", "Low contrast")]],
-      [4, 2.6, 2.6, 2.6, 2.6])
-para("CLAHE lowers mAP50 significantly in 5 of 6 conditions (Wilcoxon p \u2264 0.006), so hypothesis H1 is rejected for raw images; "
-     "denoising helps only on noisy images (+3.2 to +7.2 mAP50, 95% CI); low light costs about 25 points, so controlled lighting is "
-     "the main requirement for deployment. The final detector runs at about 0.5 s per image on a laptop CPU.")
+figure("6.1", RFIGS / "per_class_comparison.png", "Per-class test mAP50: 50% review vs final detector", 9.0)
+para("The largest gains are on the hardest defects: Resin from 60.4 to 76.6 and Crack from 53.0 to 62.2. CLAHE enhancement "
+     "lowered accuracy in 5 of 6 imaging conditions; the final detector runs at about 0.5 s per image on a laptop CPU.")
 
 # ======================================================================= CHAPTER 7
 chapter(7, "Conclusion and Future Work")
 section("7.1", "Objectives Achieved")
-for t in ["Objective 1 (achieved): dataset split by physical board, expanded from 4,000 to 20,276 images from 407 boards; higher resolution, enhancement and class balancing evaluated.",
-          "Objective 2 (achieved): reproducible detection framework with 8-class and 4-class models, each tested once on held-out boards.",
-          f"Objective 3 (achieved): recoverable-area estimation with the Board Recoverability Index, validated with weighted kappa {pi['qwk']:.2f}, plus a value estimate.",
-          "Objective 4 (achieved): full comparison with precision, recall, F1, mAP and speed, and the mathematical model with statistical validation."]:
-    bullet(t)
+para("All four objectives were achieved: a board-level dataset expanded to 20,276 images, a reproducible detection framework, "
+     f"recoverable-area grading validated with weighted kappa {pi['qwk']:.2f}, and a full comparison with a statistically "
+     "validated mathematical model.")
 section("7.2", "Contributions")
-for lead, t in [("Clean evaluation: ", "a board-level split and rectangular high-resolution input give a reproducible baseline of 63-65 mAP50 over 8 classes on 12 unseen boards; YOLO11s matches YOLO11m at 2.8x the speed."),
-                ("Mathematical model: ", "weighted box fusion of four balanced / high-resolution YOLO11s models raises test mAP50 from 69.2 to 74.7 (significant, 10 of 12 boards better)."),
-                ("Data engineering: ", f"the same recipe on the expanded 20,276-image data lifts the final detector to {ffo['map50']:.1f} mAP50 on the original test boards (+2.2, CI excludes zero) and {fff['map50']:.1f} / {fff['map']:.1f} on 51 unseen boards."),
-                ("Quality assessment: ", f"the guide's Board Recoverability Index, adapted to line-scan geometry, reproduces annotation-based grades (weighted kappa {pi['qwk']:.2f}) and drives a market-value estimate."),
-                ("Deliverable: ", "a CPU web application that shows defects, grade, recoverable area and value for an uploaded board image.")]:
-    bullet(t, lead)
+for t in ["A leakage-free, board-level evaluation of YOLO11 on industrial line-scan images.",
+          "A mathematical model of class balancing and weighted box fusion with a significant gain (69.2 to 74.7 mAP50).",
+          f"An expanded, engineered dataset lifting the final detector to {ffo['map50']:.1f} / {fff['map50']:.1f} mAP50.",
+          "The Board Recoverability Index adapted to line-scan geometry, and a CPU web application."]:
+    bullet(t)
 section("7.3", "Limitations / Challenges / Drawbacks")
-for t in ["The original test set has 12 boards (complemented by 51 boards on the expanded data); differences of 2-3 mAP50 points between single models are within its noise.",
-          "Severity weights and grade thresholds await expert calibration; grades are relative to the validation boards.",
-          "Only the four most frequent defect classes are detected; the other four had fewer than 130 training examples each.",
-          "Trained on controlled line-scan imagery: low light, painted or laminated surfaces and phone photos reduce accuracy.",
-          "The application assumes the input is a wood board; it does not reject non-wood images.",
-          "Challenge: scarce and imbalanced data, and training time on the expanded data within cloud session limits."]:
-    bullet(t)
+para("The original test set has 12 boards; severity weights and grade thresholds await expert calibration; only the four most "
+     "frequent defect classes are detected; accuracy drops under poor lighting and on painted surfaces.")
 section("7.4", "Future Enhancements")
-for t in ["Blind expert grading of 30-50 boards to calibrate severity weights and thresholds.",
-          "k-fold validation over boards; more rare-class data.",
-          "Segmentation masks for tighter defect area.",
-          "CondConv / BiFormer (full CWB) architecture.",
-          "Plywood images and field cameras; a wood / not-wood check in the application."]:
-    bullet(t)
+para("Expert grading to calibrate the BRI, k-fold validation over boards, more rare-class data, segmentation masks for tighter "
+     "defect areas, and the full CWB architecture.")
+
 
 # ======================================================================= references
 unnumbered("REFERENCES / BIBLIOGRAPHY")
@@ -667,39 +465,32 @@ REFS = [
     "F. Wilcoxon, \u201cIndividual comparisons by ranking methods,\u201d Biometrics Bulletin, vol. 1, no. 6, pp. 80\u201383, 1945.",
     "K. Zuiderveld, \u201cContrast limited adaptive histogram equalization,\u201d in Graphics Gems IV, P. S. Heckbert, Ed. San Diego, CA, USA: Academic Press, 1994, pp. 474\u2013485."]
 for i, r in enumerate(REFS, 1):
-    p = para(r, f"[{i}] ", size=11, ls=1.15, indent=0.9)
+    p = para(r, f"[{i}] ", size=10.5, ls=1.0, indent=0.9)
     p.paragraph_format.first_line_indent = Cm(-0.9)
+
 
 # ======================================================================= appendix
 unnumbered("APPENDIX -1")
 section("A.", "User Manual/Screenshots")
-for t in ["Start the application with  python app.py  and open http://127.0.0.1:7860 in a browser.",
-          "Tab 'Detect on your image': upload a board image, keep the default model (fusion of two YOLO11s models), confidence 0.25 and NMS IoU 0.6, and press 'Analyse image'.",
-          "The result shows the boxes with class and confidence, the defect heatmap, the BRI grade with the damage score and the cut-offs, the recoverable area, the per-class table, an editable value estimate and a downloadable JSON report.",
-          "Tab 'Test boards: ground truth vs prediction': choose an image from the unseen test boards to compare the annotator's boxes and grade with the model's.",
-          "Tabs 'Results' and 'Legend' list the evaluation results, the classes and the grading method."]:
-    bullet(t)
-figure("A.1", FIGS / "app_detect.png", "Application: detections on a board and confidence heatmap", 15)
-figure("A.2", FIGS / "app_grade.png", "Application: grade, recoverable area and value", 15)
+para("Run  python app.py  and open http://127.0.0.1:7860. Upload a board image and press 'Analyse image': the application shows "
+     "the defects with confidence, a heatmap, the BRI grade, the recoverable area, a value estimate and a JSON report.")
+figure("A.1", FIGS / "app_detect.png", "Application: detections on a board and confidence heatmap", 13)
 section("B.", "Code Snippets")
-para("", "Grade and position penalty of the Board Recoverability Index (bri.py):", size=11)
-code(source("bri.py", "position_penalty") + [""] + source("bri.py", "grade"), size=8.5)
-para("", "Weighted box fusion of one image (math_model.py):", size=11)
-code(source("math_model.py", "wbf_image"), size=8.5)
+para("", "Grade of the Board Recoverability Index (bri.py):", size=11)
+code(source("bri.py", "grade"), size=9)
 section("C.", "Tools used")
-for t in ["Python 3.12, PyTorch, Ultralytics YOLO11 8.4.142, OpenCV, NumPy, Gradio, Matplotlib.",
-          "Kaggle notebooks (NVIDIA Tesla T4) and the Kaggle API for training.",
-          "pytest and pytest-cov for testing; Git and GitHub for version control."]:
-    bullet(t)
+para("Python, PyTorch, Ultralytics YOLO11, OpenCV, NumPy, Gradio, Kaggle (Tesla T4), pytest, Git / GitHub.")
 
 unnumbered("PUBLICATION DETAILS (Survey paper) / (Implementation paper)")
 para("")
-unnumbered("PATENT (If Any)")
-para("")
-unnumbered("PROJECT PROPOSAL SUBMITTED (if Any)")
-para("")
+for t in ("PATENT (If Any)", "PROJECT PROPOSAL SUBMITTED (if Any)"):
+    p = para("", align=WD_ALIGN_PARAGRAPH.CENTER, space_after=12)
+    p.paragraph_format.space_before = Pt(36)
+    fmt(p.add_run(t), 16, bold=True)
+    TOC.append((1, t, t))
 unnumbered("PLAGIARISM REPORT (Plagiarism check using Turnitin)")
 para("[Turnitin plagiarism report to be attached]", align=WD_ALIGN_PARAGRAPH.CENTER, italic=True)
+
 
 
 # ---------------------------------------------------------------- contents and lists (page numbers filled by Word)
