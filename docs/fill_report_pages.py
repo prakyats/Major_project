@@ -7,7 +7,8 @@ import re
 import win32com.client
 from docx import Document
 
-PATH = r"C:\Users\ASUS\Desktop\Major_Project\docs\Major_Project_Phase-I_Report_Draft_v2.docx"
+import sys
+PATH = sys.argv[1] if len(sys.argv) > 1 else r"C:\Users\ASUS\Desktop\Major_Project\docs\Major_Project_Phase-I_Report_Draft_v2.docx"
 
 
 def word_session(fn):
