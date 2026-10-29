@@ -77,8 +77,11 @@ def dfd1():
     arrow(ax, 0.40, 0.18, 0.46, 0.18, "boxes", fs=8.5)
     arrow(ax, 0.65, 0.18, 0.71, 0.18, "grade, DIS", fs=8.5)
     arrow(ax, 0.78, 0.465, 0.62, 0.225, "thresholds", off=(0.04, 0), fs=8.5)
-    ax.annotate("", xy=(0.09, 0.10), xytext=(0.81, 0.055), arrowprops=dict(arrowstyle="-|>", color="#333", lw=1.3, connectionstyle="arc3,rad=-0.18"))
-    ax.text(0.46, 0.005, "annotated image, heatmap, grade, recoverable area, value, JSON report", ha="center", fontsize=8.5, style="italic")
+    ax.set_ylim(-0.13, 1.0)
+    ax.plot([0.81, 0.81], [0.11, -0.07], color="#333", lw=1.3); ax.plot([0.08, 0.81], [-0.07, -0.07], color="#333", lw=1.3)
+    ax.annotate("", xy=(0.08, 0.095), xytext=(0.08, -0.07), arrowprops=dict(arrowstyle="-|>", color="#333", lw=1.3))
+    ax.text(0.445, -0.06, "annotated image, heatmap, grade, recoverable area, value, JSON report", ha="center", va="bottom",
+            fontsize=8.5, style="italic")
     fig.savefig(OUT / "dfd_level1.png", bbox_inches="tight", pad_inches=0.1); plt.close(fig)
 
 
